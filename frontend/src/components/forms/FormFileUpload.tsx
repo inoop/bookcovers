@@ -8,6 +8,7 @@ interface FormFileUploadProps {
   onUpload: (file: File) => Promise<void>;
   accept?: Record<string, string[]>;
   maxSize?: number;
+  disabled?: boolean;
 }
 
 const DEFAULT_ACCEPT = {
@@ -21,6 +22,7 @@ export default function FormFileUpload({
   onUpload,
   accept = DEFAULT_ACCEPT,
   maxSize = 10 * 1024 * 1024,
+  disabled = false,
 }: FormFileUploadProps) {
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -50,7 +52,7 @@ export default function FormFileUpload({
     onDrop,
     accept,
     maxSize,
-    disabled: uploading,
+    disabled: uploading || disabled,
   });
 
   return (

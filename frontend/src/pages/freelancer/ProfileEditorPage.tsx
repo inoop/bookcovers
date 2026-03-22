@@ -50,6 +50,7 @@ export default function ProfileEditorPage() {
   const [missingFields, setMissingFields] = useState<string[]>([]);
   const [saveMsg, setSaveMsg] = useState<string | null>(null);
   const [submitError, setSubmitError] = useState<string | null>(null);
+  const [uploadGateError, setUploadGateError] = useState<string | null>(null);
 
   const methods = useForm<ProfileUpdateRequest>({ defaultValues: {} });
   const { reset, handleSubmit, watch, setValue } = methods;
@@ -143,6 +144,25 @@ export default function ProfileEditorPage() {
       }
     }
   };
+
+  async function handleUpload(file: File) {
+    setUploadGateError(null);
+    if (!isNew) {
+      await uploadAsset.mutateAsync(file);
+      return;
+    }
+    const name = methods.getValues('name')?.trim() ?? '';
+    const email = methods.getValues('email')?.trim() ?? '';
+    const missing: string[] = [];
+    if (!name) missing.push('Full Name');
+    if (!email) missing.push('Email');
+    if (missing.length > 0) {
+      setUploadGateError(`Please fill in ${missing.join(' and ')} before uploading work samples.`);
+      return;
+    }
+    await createProfile.mutateAsync({ name, email });
+    await uploadAsset.mutateAsync(file);
+  }
 
   if (isLoading) {
     return (
@@ -310,7 +330,17 @@ export default function ProfileEditorPage() {
               </Typography>
 
               {isEditable && (
-                <FormFileUpload onUpload={async (file) => { await uploadAsset.mutateAsync(file); }} />
+                <>
+                  {uploadGateError && (
+                    <Alert severity="warning" sx={{ mb: 2 }} onClose={() => setUploadGateError(null)}>
+                      {uploadGateError}
+                    </Alert>
+                  )}
+                  <FormFileUpload
+                    onUpload={handleUpload}
+                    disabled={createProfile.isPending || uploadAsset.isPending}
+                  />
+                </>
               )}
 
               {profile && profile.portfolio_assets.length > 0 && (
