@@ -47,14 +47,6 @@ export default function HomePage() {
               >
                 Browse Talent
               </Button>
-              <Button
-                variant="outlined"
-                component={RouterLink}
-                to="/briefs/new"
-                sx={{ borderRadius: 999 }}
-              >
-                Post a Brief
-              </Button>
             </Box>
           </Box>
         </Container>

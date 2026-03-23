@@ -5,7 +5,6 @@ import { colors, fonts } from '../theme/tokens';
 const navItems = [
   { label: 'Freelancers', path: '/freelancers' },
   { label: 'Book Covers', path: '/covers' },
-  { label: 'Post a Brief', path: '/briefs/new' },
   { label: 'Resources', path: '/resources' },
 ];
 
