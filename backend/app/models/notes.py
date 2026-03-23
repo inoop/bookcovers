@@ -14,6 +14,7 @@ class NoteType(str, enum.Enum):
     COMPLIANCE = "compliance"
     PROJECT = "project"
     EVALUATION = "evaluation"
+    SYSTEM = "system"  # machine-written audit trail entries
 
 
 class NoteVisibility(str, enum.Enum):

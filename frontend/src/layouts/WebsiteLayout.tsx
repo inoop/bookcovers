@@ -1,5 +1,5 @@
 import { AppBar, Box, Container, Link, Toolbar, Typography } from '@mui/material';
-import { Outlet, Link as RouterLink } from 'react-router-dom';
+import { Outlet, Link as RouterLink, useLocation } from 'react-router-dom';
 import { colors, fonts } from '../theme/tokens';
 
 const navItems = [
@@ -9,6 +9,9 @@ const navItems = [
 ];
 
 export default function WebsiteLayout() {
+  const location = useLocation();
+  const isHomePage = location.pathname === '/';
+
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
       {/* Header */}
@@ -36,27 +39,29 @@ export default function WebsiteLayout() {
               </Typography>
             </Link>
 
-            <Box sx={{ display: 'flex', gap: 4 }}>
-              {navItems.map((item) => (
-                <Link
-                  key={item.path}
-                  component={RouterLink}
-                  to={item.path}
-                  underline="none"
-                  sx={{
-                    fontFamily: fonts.utility,
-                    fontSize: '0.6875rem',
-                    letterSpacing: '0.08em',
-                    textTransform: 'uppercase',
-                    color: colors.text.primary,
-                    '&:hover': { color: colors.action.primary },
-                    display: { xs: 'none', md: 'block' },
-                  }}
-                >
-                  {item.label}
-                </Link>
-              ))}
-            </Box>
+            {!isHomePage && (
+              <Box sx={{ display: 'flex', gap: 4 }}>
+                {navItems.map((item) => (
+                  <Link
+                    key={item.path}
+                    component={RouterLink}
+                    to={item.path}
+                    underline="none"
+                    sx={{
+                      fontFamily: fonts.utility,
+                      fontSize: '0.6875rem',
+                      letterSpacing: '0.08em',
+                      textTransform: 'uppercase',
+                      color: colors.text.primary,
+                      '&:hover': { color: colors.action.primary },
+                      display: { xs: 'none', md: 'block' },
+                    }}
+                  >
+                    {item.label}
+                  </Link>
+                ))}
+              </Box>
+            )}
           </Toolbar>
         </Container>
       </AppBar>
@@ -96,36 +101,38 @@ export default function WebsiteLayout() {
               </Typography>
             </Box>
 
-            <Box>
-              <Typography
-                sx={{
-                  fontFamily: fonts.utility,
-                  fontSize: '0.6875rem',
-                  letterSpacing: '0.08em',
-                  textTransform: 'uppercase',
-                  color: colors.text.inverse,
-                  mb: 3,
-                }}
-              >
-                Navigate
-              </Typography>
-              {navItems.map((item) => (
-                <Link
-                  key={item.path}
-                  component={RouterLink}
-                  to={item.path}
+            {!isHomePage && (
+              <Box>
+                <Typography
                   sx={{
-                    display: 'block',
-                    color: colors.text.muted,
-                    mb: 2,
-                    fontSize: '0.875rem',
-                    '&:hover': { color: colors.text.inverse },
+                    fontFamily: fonts.utility,
+                    fontSize: '0.6875rem',
+                    letterSpacing: '0.08em',
+                    textTransform: 'uppercase',
+                    color: colors.text.inverse,
+                    mb: 3,
                   }}
                 >
-                  {item.label}
-                </Link>
-              ))}
-            </Box>
+                  Navigate
+                </Typography>
+                {navItems.map((item) => (
+                  <Link
+                    key={item.path}
+                    component={RouterLink}
+                    to={item.path}
+                    sx={{
+                      display: 'block',
+                      color: colors.text.muted,
+                      mb: 2,
+                      fontSize: '0.875rem',
+                      '&:hover': { color: colors.text.inverse },
+                    }}
+                  >
+                    {item.label}
+                  </Link>
+                ))}
+              </Box>
+            )}
 
             <Box>
               <Typography

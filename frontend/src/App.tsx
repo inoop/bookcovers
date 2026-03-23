@@ -12,6 +12,8 @@ import CoverArchivePage from './pages/public/CoverArchivePage';
 import CoverDetailPage from './pages/public/CoverDetailPage';
 import TalentDatabasePage from './pages/internal/TalentDatabasePage';
 import ReviewQueuePage from './pages/internal/ReviewQueuePage';
+import FoldersPage from './pages/internal/FoldersPage';
+import FolderDetailPage from './pages/internal/FolderDetailPage';
 import ProfileEditorPage from './pages/freelancer/ProfileEditorPage';
 import PortfolioPage from './pages/freelancer/PortfolioPage';
 
@@ -46,6 +48,8 @@ export default function App() {
               <Route path="talent" element={<TalentDatabasePage />} />
               <Route path="covers" element={<CoverArchivePage />} />
               <Route path="review" element={<ReviewQueuePage />} />
+              <Route path="folders" element={<FoldersPage />} />
+              <Route path="folders/:folderId" element={<FolderDetailPage />} />
             </Route>
 
             {/* Freelancer portal */}

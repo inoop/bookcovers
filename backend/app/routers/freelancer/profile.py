@@ -153,7 +153,7 @@ async def update_profile(
     if not profile:
         raise HTTPException(404, "No profile found. Create one first.")
 
-    editable_statuses = {ProfileStatus.DRAFT.value, ProfileStatus.CHANGES_REQUESTED.value}
+    editable_statuses = {ProfileStatus.DRAFT.value, ProfileStatus.CHANGES_REQUESTED.value, ProfileStatus.APPROVED.value}
     if profile.status not in editable_statuses:
         raise HTTPException(
             403,
@@ -238,6 +238,29 @@ async def submit_profile(
         )
 
     profile.status = ProfileStatus.SUBMITTED.value
+    await db.flush()
+    await db.refresh(profile)
+    return await _build_response(db, profile, storage)
+
+
+@router.post("/retract", response_model=FreelancerOwnProfileResponse)
+async def retract_profile(
+    user: AuthUser = Depends(require_roles("freelancer")),
+    db: AsyncSession = Depends(get_db),
+    storage: StorageService = Depends(get_storage_service),
+):
+    profile = await _get_own_profile(db, user)
+    if not profile:
+        raise HTTPException(404, "No profile found. Create one first.")
+
+    retractable = {ProfileStatus.SUBMITTED.value, ProfileStatus.UNDER_REVIEW.value}
+    if profile.status not in retractable:
+        raise HTTPException(
+            403,
+            f"Cannot retract profile in '{profile.status}' status.",
+        )
+
+    profile.status = ProfileStatus.DRAFT.value
     await db.flush()
     await db.refresh(profile)
     return await _build_response(db, profile, storage)

@@ -48,3 +48,14 @@ export function useSubmitProfile() {
     onSuccess: () => qc.invalidateQueries({ queryKey: ['own-profile'] }),
   });
 }
+
+export function useRetractProfile() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async () => {
+      const { data } = await apiClient.post<OwnProfileResponse>('/api/freelancer/profile/retract');
+      return data;
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['own-profile'] }),
+  });
+}

@@ -200,3 +200,188 @@ export interface PortfolioAssetUpdateRequest {
   visibility?: string;
   tags?: string[];
 }
+
+// --- Internal review types ---
+
+export interface ReviewSummary {
+  submitted: number;
+  under_review: number;
+  changes_requested: number;
+  approved: number;
+  rejected: number;
+  archived: number;
+}
+
+export interface ProfileQueueItem {
+  id: string;
+  name: string;
+  email: string;
+  slug?: string;
+  status: string;
+  created_at: string;
+  last_reviewed_at?: string;
+  review_owner_id?: string;
+  audience_tags?: string[];
+  style_tags?: string[];
+}
+
+export interface ProfileNote {
+  id: string;
+  note_type: string;
+  body: string;
+  author_user_id: string;
+  created_at: string;
+}
+
+export interface PortfolioAssetReviewItem {
+  id: string;
+  title?: string;
+  description?: string;
+  asset_type: string;
+  review_status: string;
+  visibility: string;
+  sort_order: number;
+  tags?: string[];
+  media_url?: string;
+}
+
+export interface FreelancerInternalDetail {
+  id: string;
+  slug?: string;
+  status: string;
+  name: string;
+  pronouns?: string;
+  summary?: string;
+  email: string;
+  website_links?: { url: string; label?: string }[];
+  current_locations?: string[];
+  past_locations?: string[];
+  is_self_submission: boolean;
+  relation_type?: string;
+  has_agent: boolean;
+  agent_details?: string;
+  worked_with_prh: boolean;
+  prh_details?: string;
+  employee_of_prh: boolean;
+  prh_employee_details?: string;
+  audience_tags?: string[];
+  style_tags?: string[];
+  genre_tags?: string[];
+  image_tags?: string[];
+  uses_ai: boolean;
+  ai_details?: string;
+  lived_experience_statement?: string;
+  books_excited_about?: string[];
+  profile_statement?: string;
+  approved_for_hire: boolean;
+  featured: boolean;
+  rate_info?: Record<string, unknown>;
+  review_owner_id?: string;
+  last_reviewed_at?: string;
+  created_at: string;
+  notes: ProfileNote[];
+  portfolio_assets: PortfolioAssetReviewItem[];
+}
+
+export interface ReviewAction {
+  action: string;
+  note?: string;
+}
+
+export interface ReviewQueueFilters {
+  status?: string;
+  page?: number;
+  page_size?: number;
+}
+
+// --- Internal talent curation types ---
+
+export interface FavoriteToggleResponse {
+  profile_id: string;
+  is_favorite: boolean;
+}
+
+export interface InternalFreelancerCard {
+  id: string;
+  slug?: string;
+  name: string;
+  pronouns?: string;
+  summary?: string;
+  status: string;
+  approved_for_hire: boolean;
+  current_locations?: string[];
+  audience_tags?: string[];
+  style_tags?: string[];
+  genre_tags?: string[];
+  has_agent: boolean;
+  worked_with_prh: boolean;
+  uses_ai: boolean;
+  is_favorite: boolean;
+  folder_ids: string[];
+  hero_image_url?: string;
+}
+
+export interface FolderResponse {
+  id: string;
+  owner_user_id: string;
+  name: string;
+  privacy: string;  // private | shared_users | shared_team
+  description?: string;
+  shared_with?: string[];
+  created_at: string;
+  member_count: number;
+}
+
+export interface FolderDetailResponse extends FolderResponse {
+  members: InternalFreelancerCard[];
+}
+
+export interface FolderCreateRequest {
+  name: string;
+  privacy?: string;
+  description?: string;
+  shared_with?: string[];
+}
+
+export interface FolderUpdateRequest {
+  name?: string;
+  privacy?: string;
+  description?: string;
+  shared_with?: string[];
+}
+
+export interface FeedbackEntry {
+  id: string;
+  author_user_id: string;
+  body: string;
+  project_context?: string;
+  created_at: string;
+}
+
+export interface FeedbackEntryCreateRequest {
+  body: string;
+  project_context?: string;
+}
+
+export interface NoteUpdateRequest {
+  note_type?: string;
+  body?: string;
+}
+
+export interface InternalFreelancerFilters {
+  q?: string;
+  status?: string;        // comma-separated e.g. "approved,submitted"
+  audience?: string[];
+  style?: string[];
+  genre?: string[];
+  location?: string;
+  uses_ai?: boolean;
+  has_agent?: boolean;
+  worked_with_prh?: boolean;
+  employee_of_prh?: boolean;
+  folder_id?: string;
+  is_favorite?: boolean;
+  sort?: string;
+  page?: number;
+  page_size?: number;
+}

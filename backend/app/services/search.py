@@ -7,6 +7,7 @@ import sqlalchemy as sa
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.config import get_settings
+from app.models.collaboration import Favorite, FolderMembership
 from app.models.freelancer_profile import FreelancerProfile, ProfileStatus
 from app.models.book_cover import BookCover, BookCoverContributor, CoverVisibility
 from app.models.portfolio_asset import PortfolioAsset, ReviewStatus, AssetVisibility
@@ -89,6 +90,109 @@ async def search_freelancers(
         stmt = stmt.order_by(FreelancerProfile.created_at.desc())
 
     # Paginate
+    stmt = stmt.offset((page - 1) * page_size).limit(page_size)
+
+    result = await db.execute(stmt)
+    profiles = list(result.scalars().all())
+    return profiles, total
+
+
+async def search_freelancers_internal(
+    db: AsyncSession,
+    user_id: str,
+    *,
+    q: str | None = None,
+    status: list[str] | None = None,
+    audience: list[str] | None = None,
+    style: list[str] | None = None,
+    genre: list[str] | None = None,
+    location: str | None = None,
+    uses_ai: bool | None = None,
+    has_agent: bool | None = None,
+    worked_with_prh: bool | None = None,
+    employee_of_prh: bool | None = None,
+    folder_id: str | None = None,
+    is_favorite: bool | None = None,
+    sort: str = "newest",
+    page: int = 1,
+    page_size: int = 24,
+) -> tuple[list[FreelancerProfile], int]:
+    """Search freelancers with extended internal filters. Returns all statuses by default."""
+    stmt = sa.select(FreelancerProfile)
+
+    # Status filter (comma-separated list or list of strings)
+    if status:
+        stmt = stmt.where(FreelancerProfile.status.in_(status))
+
+    # Keyword search
+    if q:
+        like_q = f"%{q}%"
+        stmt = stmt.where(
+            sa.or_(
+                FreelancerProfile.name.ilike(like_q),
+                FreelancerProfile.profile_statement.ilike(like_q),
+                FreelancerProfile.summary.ilike(like_q),
+            )
+        )
+
+    settings = get_settings()
+    is_sqlite = settings.DATABASE_URL.startswith("sqlite")
+
+    if audience:
+        stmt = _filter_json_array(stmt, FreelancerProfile.audience_tags, audience, is_sqlite)
+    if style:
+        stmt = _filter_json_array(stmt, FreelancerProfile.style_tags, style, is_sqlite)
+    if genre:
+        stmt = _filter_json_array(stmt, FreelancerProfile.genre_tags, genre, is_sqlite)
+
+    if location:
+        like_loc = f"%{location}%"
+        stmt = stmt.where(
+            sa.cast(FreelancerProfile.current_locations, sa.String).ilike(like_loc)
+        )
+
+    if uses_ai is not None:
+        stmt = stmt.where(FreelancerProfile.uses_ai == uses_ai)
+
+    if has_agent is not None:
+        stmt = stmt.where(FreelancerProfile.has_agent == has_agent)
+
+    if worked_with_prh is not None:
+        stmt = stmt.where(FreelancerProfile.worked_with_prh == worked_with_prh)
+
+    if employee_of_prh is not None:
+        stmt = stmt.where(FreelancerProfile.employee_of_prh == employee_of_prh)
+
+    # Folder filter — restrict to profiles in a specific folder
+    if folder_id:
+        stmt = stmt.join(
+            FolderMembership,
+            sa.and_(
+                FolderMembership.freelancer_profile_id == FreelancerProfile.id,
+                FolderMembership.folder_id == folder_id,
+            ),
+        )
+
+    # Favorites filter — restrict to profiles favorited by this user
+    if is_favorite:
+        stmt = stmt.join(
+            Favorite,
+            sa.and_(
+                Favorite.freelancer_profile_id == FreelancerProfile.id,
+                Favorite.user_id == user_id,
+            ),
+        )
+
+    count_stmt = sa.select(sa.func.count()).select_from(stmt.subquery())
+    total = (await db.execute(count_stmt)).scalar_one()
+
+    if sort == "alpha":
+        stmt = stmt.order_by(FreelancerProfile.name.asc())
+    elif sort == "featured":
+        stmt = stmt.order_by(FreelancerProfile.featured.desc(), FreelancerProfile.created_at.desc())
+    else:  # newest (default)
+        stmt = stmt.order_by(FreelancerProfile.created_at.desc())
+
     stmt = stmt.offset((page - 1) * page_size).limit(page_size)
 
     result = await db.execute(stmt)

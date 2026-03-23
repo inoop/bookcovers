@@ -9,7 +9,7 @@ import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import ExpandLessIcon from '@mui/icons-material/ExpandLess';
 import AddIcon from '@mui/icons-material/Add';
 import DeleteIcon from '@mui/icons-material/Delete';
-import { useOwnProfile, useCreateProfile, useUpdateProfile, useSubmitProfile } from '../../api/hooks/useProfile';
+import { useOwnProfile, useCreateProfile, useUpdateProfile, useSubmitProfile, useRetractProfile } from '../../api/hooks/useProfile';
 import { useOwnPortfolio, useUploadAsset, useDeleteAsset } from '../../api/hooks/usePortfolio';
 import { useTaxonomy } from '../../api/hooks/useTaxonomy';
 import FormTextField from '../../components/forms/FormTextField';
@@ -33,6 +33,7 @@ export default function ProfileEditorPage() {
   const createProfile = useCreateProfile();
   const updateProfile = useUpdateProfile();
   const submitProfile = useSubmitProfile();
+  const retractProfile = useRetractProfile();
 
   const { data: audienceTerms } = useTaxonomy('audience');
   const { data: styleTerms } = useTaxonomy('style');
@@ -47,10 +48,12 @@ export default function ProfileEditorPage() {
   const [classOpen, setClassOpen] = useState(true);
   const [selfIdOpen, setSelfIdOpen] = useState(true);
   const [confirmOpen, setConfirmOpen] = useState(false);
+  const [retractConfirmOpen, setRetractConfirmOpen] = useState(false);
   const [missingFieldsOpen, setMissingFieldsOpen] = useState(false);
   const [missingFields, setMissingFields] = useState<string[]>([]);
   const [saveMsg, setSaveMsg] = useState<string | null>(null);
   const [submitError, setSubmitError] = useState<string | null>(null);
+  const [retractError, setRetractError] = useState<string | null>(null);
   const [submitSuccessOpen, setSubmitSuccessOpen] = useState(false);
 
   const methods = useForm<ProfileUpdateRequest>({ defaultValues: {} });
@@ -96,7 +99,8 @@ export default function ProfileEditorPage() {
 
   // If no profile exists and not loading, show create form
   const isNew = !isLoading && !profile && (loadError as any)?.response?.status === 404;
-  const isEditable = !profile || profile.status === 'draft' || profile.status === 'changes_requested';
+  const isEditable = !profile || ['draft', 'changes_requested', 'approved'].includes(profile.status);
+  const isPending = profile?.status === 'submitted' || profile?.status === 'under_review';
 
   const onSave = async (data: ProfileUpdateRequest) => {
     setSaveMsg(null);
@@ -147,6 +151,16 @@ export default function ProfileEditorPage() {
     }
   };
 
+  const onRetract = async () => {
+    setRetractError(null);
+    setRetractConfirmOpen(false);
+    try {
+      await retractProfile.mutateAsync();
+    } catch (e: any) {
+      setRetractError(e?.response?.data?.detail || 'Failed to cancel submission');
+    }
+  };
+
   if (isLoading) {
     return (
       <Box sx={{ display: 'flex', justifyContent: 'center', py: 16 }}>
@@ -162,7 +176,7 @@ export default function ProfileEditorPage() {
         {profile && (
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 6 }}>
             <Chip
-              label={profile.status.replace('_', ' ').toUpperCase()}
+              label={profile.status.replace(/_/g, ' ').toUpperCase()}
               size="small"
               sx={{
                 backgroundColor: STATUS_COLORS[profile.status] || colors.text.muted,
@@ -172,6 +186,16 @@ export default function ProfileEditorPage() {
                 letterSpacing: '0.05em',
               }}
             />
+            {isPending && (
+              <Typography variant="body2" sx={{ color: colors.status.info }}>
+                Your profile is under review. You cannot edit it until the review is complete.
+              </Typography>
+            )}
+            {profile.status === 'approved' && (
+              <Typography variant="body2" sx={{ color: colors.status.success }}>
+                Your profile has been approved. You can continue editing it below.
+              </Typography>
+            )}
             {profile.status === 'changes_requested' && (
               <Typography variant="body2" sx={{ color: colors.status.warning }}>
                 Reviewer requested changes. Please update and resubmit.
@@ -186,6 +210,7 @@ export default function ProfileEditorPage() {
 
         {saveMsg && <Alert severity="success" sx={{ mb: 4 }}>{saveMsg}</Alert>}
         {submitError && <Alert severity="error" sx={{ mb: 4 }}>{submitError}</Alert>}
+        {retractError && <Alert severity="error" sx={{ mb: 4 }}>{retractError}</Alert>}
 
         {/* Section 1: About Me */}
         <SectionHeader title="About Me" open={aboutOpen} onToggle={() => setAboutOpen(!aboutOpen)} />
@@ -418,16 +443,30 @@ export default function ProfileEditorPage() {
                 variant="contained"
                 disabled={updateProfile.isPending || createProfile.isPending}
               >
-                {updateProfile.isPending || createProfile.isPending ? 'Saving...' : 'Save Draft'}
+                {updateProfile.isPending || createProfile.isPending
+                  ? 'Saving...'
+                  : profile?.status === 'approved' ? 'Save Changes' : 'Save Draft'}
               </Button>
-              <Button
-                variant="outlined"
-                onClick={() => setConfirmOpen(true)}
-                disabled={submitProfile.isPending}
-              >
-                Submit for Review
-              </Button>
+              {profile?.status !== 'approved' && (
+                <Button
+                  variant="outlined"
+                  onClick={() => setConfirmOpen(true)}
+                  disabled={submitProfile.isPending}
+                >
+                  Submit for Review
+                </Button>
+              )}
             </>
+          )}
+          {isPending && (
+            <Button
+              variant="outlined"
+              color="warning"
+              onClick={() => setRetractConfirmOpen(true)}
+              disabled={retractProfile.isPending}
+            >
+              {retractProfile.isPending ? 'Canceling...' : 'Cancel Submission'}
+            </Button>
           )}
         </Box>
 
@@ -460,6 +499,22 @@ export default function ProfileEditorPage() {
           <DialogActions>
             <Button onClick={() => setSubmitSuccessOpen(false)} variant="contained">
               Got It
+            </Button>
+          </DialogActions>
+        </Dialog>
+
+        {/* Retract Confirm Dialog */}
+        <Dialog open={retractConfirmOpen} onClose={() => setRetractConfirmOpen(false)}>
+          <DialogTitle>Cancel your submission?</DialogTitle>
+          <DialogContent>
+            <DialogContentText>
+              This will return your profile to draft status. You can edit and resubmit at any time.
+            </DialogContentText>
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={() => setRetractConfirmOpen(false)}>Keep Submitted</Button>
+            <Button onClick={onRetract} color="warning" variant="outlined">
+              Cancel Submission
             </Button>
           </DialogActions>
         </Dialog>
