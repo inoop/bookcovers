@@ -6,9 +6,10 @@ interface FormTagSelectProps {
   label: string;
   options: string[];
   freeSolo?: boolean;
+  required?: boolean;
 }
 
-export default function FormTagSelect({ name, label, options, freeSolo = false }: FormTagSelectProps) {
+export default function FormTagSelect({ name, label, options, freeSolo = false, required = false }: FormTagSelectProps) {
   const { control } = useFormContext();
 
   return (
@@ -19,6 +20,7 @@ export default function FormTagSelect({ name, label, options, freeSolo = false }
         <Autocomplete
           multiple
           freeSolo={freeSolo}
+          autoSelect={freeSolo}
           options={options}
           value={field.value ?? []}
           onChange={(_, newValue) => field.onChange(newValue)}
@@ -32,6 +34,7 @@ export default function FormTagSelect({ name, label, options, freeSolo = false }
             <TextField
               {...params}
               label={label}
+              required={required}
               error={!!fieldState.error}
               helperText={fieldState.error?.message}
             />

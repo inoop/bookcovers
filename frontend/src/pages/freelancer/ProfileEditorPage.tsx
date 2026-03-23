@@ -254,6 +254,7 @@ export default function ProfileEditorPage() {
               label="Current Location(s)"
               options={[]}
               freeSolo
+              required
             />
             <FormTagSelect name="past_locations" label="Past Locations" options={[]} freeSolo />
 
@@ -281,13 +282,15 @@ export default function ProfileEditorPage() {
           <Box sx={{ display: 'grid', gap: 5, mb: 6 }}>
             <FormTagSelect
               name="audience_tags"
-              label="Audience (required)"
+              label="Audience"
               options={audienceTerms?.map((t) => t.label) || []}
+              required
             />
             <FormTagSelect
               name="style_tags"
-              label="Style (required)"
+              label="Style"
               options={styleTerms?.map((t) => t.label) || []}
+              required
             />
             <FormTagSelect
               name="genre_tags"
@@ -304,7 +307,7 @@ export default function ProfileEditorPage() {
             <Divider />
             <Box>
               <Typography variant="body2" sx={{ fontFamily: fonts.bodyStrong, mb: 1 }}>
-                Work Samples (required)
+                Work Samples <Box component="span" sx={{ color: 'error.main' }}>*</Box>
               </Typography>
               <Typography variant="body2" sx={{ color: colors.text.muted, mb: 3 }}>
                 Upload at least one sample to submit your profile.
@@ -395,9 +398,10 @@ export default function ProfileEditorPage() {
             />
             <FormTextField
               name="profile_statement"
-              label="Artist Profile Statement (required)"
+              label="Artist Profile Statement"
               multiline
               rows={5}
+              required
               disabled={!isEditable}
             />
           </Box>
@@ -414,15 +418,13 @@ export default function ProfileEditorPage() {
               >
                 {updateProfile.isPending || createProfile.isPending ? 'Saving...' : 'Save Draft'}
               </Button>
-              {!isNew && (
-                <Button
-                  variant="outlined"
-                  onClick={() => setConfirmOpen(true)}
-                  disabled={submitProfile.isPending}
-                >
-                  Submit for Review
-                </Button>
-              )}
+              <Button
+                variant="outlined"
+                onClick={() => setConfirmOpen(true)}
+                disabled={submitProfile.isPending}
+              >
+                Submit for Review
+              </Button>
             </>
           )}
         </Box>
