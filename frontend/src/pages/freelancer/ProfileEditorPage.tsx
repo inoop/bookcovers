@@ -51,6 +51,7 @@ export default function ProfileEditorPage() {
   const [missingFields, setMissingFields] = useState<string[]>([]);
   const [saveMsg, setSaveMsg] = useState<string | null>(null);
   const [submitError, setSubmitError] = useState<string | null>(null);
+  const [submitSuccessOpen, setSubmitSuccessOpen] = useState(false);
 
   const methods = useForm<ProfileUpdateRequest>({ defaultValues: {} });
   const { reset, handleSubmit, watch, setValue } = methods;
@@ -134,6 +135,7 @@ export default function ProfileEditorPage() {
         await updateProfile.mutateAsync(formData);
       }
       await submitProfile.mutateAsync();
+      setSubmitSuccessOpen(true);
     } catch (e: any) {
       const detail = e?.response?.data?.detail;
       if (typeof detail === 'object' && detail?.missing_fields) {
@@ -442,6 +444,22 @@ export default function ProfileEditorPage() {
             <Button onClick={() => setConfirmOpen(false)}>Cancel</Button>
             <Button onClick={onSubmitForReview} variant="contained">
               Submit
+            </Button>
+          </DialogActions>
+        </Dialog>
+
+        {/* Submission Success Dialog */}
+        <Dialog open={submitSuccessOpen} onClose={() => setSubmitSuccessOpen(false)}>
+          <DialogTitle>Profile Submitted!</DialogTitle>
+          <DialogContent>
+            <DialogContentText>
+              Your profile has been successfully submitted for review.
+              Please allow 3–5 business days for approval.
+            </DialogContentText>
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={() => setSubmitSuccessOpen(false)} variant="contained">
+              Got It
             </Button>
           </DialogActions>
         </Dialog>
