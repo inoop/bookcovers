@@ -17,74 +17,26 @@ depends_on: Union[str, Sequence[str], None] = None
 
 
 def upgrade() -> None:
-    # Add user_id as nullable first so we can backfill
-    op.add_column(
-        "portfolio_assets",
-        sa.Column("user_id", sa.String(36), nullable=True),
-    )
-
-    # Backfill from the joined profile
-    op.execute(
-        """
-        UPDATE portfolio_assets
-        SET user_id = (
-            SELECT fp.user_id
-            FROM freelancer_profiles fp
-            WHERE fp.id = portfolio_assets.freelancer_profile_id
-        )
-        """
-    )
-
-    # Make non-nullable now that data is populated
-    op.alter_column("portfolio_assets", "user_id", nullable=False)
-
-    # Drop old FK constraint and column
     op.drop_constraint(
         "portfolio_assets_freelancer_profile_id_fkey",
         "portfolio_assets",
         type_="foreignkey",
     )
     op.drop_column("portfolio_assets", "freelancer_profile_id")
-
-    # Add new FK
-    op.create_foreign_key(
-        "portfolio_assets_user_id_fkey",
+    op.add_column(
         "portfolio_assets",
-        "users",
-        ["user_id"],
-        ["id"],
+        sa.Column("user_id", sa.String(36), sa.ForeignKey("users.id"), nullable=False),
     )
 
 
 def downgrade() -> None:
-    op.drop_constraint(
-        "portfolio_assets_user_id_fkey", "portfolio_assets", type_="foreignkey"
-    )
-
+    op.drop_column("portfolio_assets", "user_id")
     op.add_column(
         "portfolio_assets",
-        sa.Column("freelancer_profile_id", sa.String(36), nullable=True),
-    )
-
-    op.execute(
-        """
-        UPDATE portfolio_assets
-        SET freelancer_profile_id = (
-            SELECT fp.id
-            FROM freelancer_profiles fp
-            WHERE fp.user_id = portfolio_assets.user_id
-        )
-        """
-    )
-
-    op.alter_column("portfolio_assets", "freelancer_profile_id", nullable=False)
-
-    op.drop_column("portfolio_assets", "user_id")
-
-    op.create_foreign_key(
-        "portfolio_assets_freelancer_profile_id_fkey",
-        "portfolio_assets",
-        "freelancer_profiles",
-        ["freelancer_profile_id"],
-        ["id"],
+        sa.Column(
+            "freelancer_profile_id",
+            sa.String(36),
+            sa.ForeignKey("freelancer_profiles.id"),
+            nullable=False,
+        ),
     )
