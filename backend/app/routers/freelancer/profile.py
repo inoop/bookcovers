@@ -45,7 +45,7 @@ async def _build_response(
     stmt = (
         sa.select(PortfolioAsset)
         .where(
-            PortfolioAsset.freelancer_profile_id == profile.id,
+            PortfolioAsset.user_id == profile.user_id,
             PortfolioAsset.visibility != AssetVisibility.HIDDEN.value,
         )
         .order_by(PortfolioAsset.sort_order.asc())
@@ -220,7 +220,7 @@ async def submit_profile(
             sa.select(sa.func.count())
             .select_from(PortfolioAsset)
             .where(
-                PortfolioAsset.freelancer_profile_id == profile.id,
+                PortfolioAsset.user_id == profile.user_id,
                 PortfolioAsset.visibility != AssetVisibility.HIDDEN.value,
             )
         )

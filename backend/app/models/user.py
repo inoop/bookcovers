@@ -32,6 +32,7 @@ class User(TimestampMixin, Base):
         back_populates="user",
         foreign_keys="[FreelancerProfile.user_id]",
     )
+    portfolio_assets = relationship("PortfolioAsset", back_populates="user")
     folders = relationship("Folder", back_populates="owner")
     favorites = relationship("Favorite", back_populates="user")
     notes = relationship("ProfileNote", back_populates="author")

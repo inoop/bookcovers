@@ -33,8 +33,8 @@ class PortfolioAsset(TimestampMixin, Base):
     __tablename__ = "portfolio_assets"
 
     id: Mapped[str] = mapped_column(sa.String(36), primary_key=True, default=new_uuid)
-    freelancer_profile_id: Mapped[str] = mapped_column(
-        sa.String(36), sa.ForeignKey("freelancer_profiles.id"), nullable=False
+    user_id: Mapped[str] = mapped_column(
+        sa.String(36), sa.ForeignKey("users.id"), nullable=False
     )
     media_asset_id: Mapped[str] = mapped_column(
         sa.String(36), sa.ForeignKey("media_assets.id"), nullable=False
@@ -54,5 +54,5 @@ class PortfolioAsset(TimestampMixin, Base):
     tags: Mapped[list | None] = mapped_column(PortableJSON, nullable=True)
 
     # Relationships
-    freelancer_profile = relationship("FreelancerProfile", back_populates="portfolio_assets")
+    user = relationship("User", back_populates="portfolio_assets")
     media_asset = relationship("MediaAsset")

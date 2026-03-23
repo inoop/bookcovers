@@ -82,7 +82,6 @@ class FreelancerProfile(TimestampMixin, Base):
 
     # Relationships
     user = relationship("User", back_populates="freelancer_profiles", foreign_keys=[user_id])
-    portfolio_assets = relationship("PortfolioAsset", back_populates="freelancer_profile")
     cover_credits = relationship("BookCoverContributor", back_populates="freelancer_profile")
     notes = relationship("ProfileNote", back_populates="freelancer_profile")
     feedback_entries = relationship("FeedbackEntry", back_populates="freelancer_profile")

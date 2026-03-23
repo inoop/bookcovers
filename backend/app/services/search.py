@@ -162,13 +162,13 @@ async def search_covers(
 
 
 async def get_public_portfolio_assets(
-    db: AsyncSession, profile_id: str
+    db: AsyncSession, user_id: str
 ) -> list[PortfolioAsset]:
-    """Get approved, public portfolio assets for a profile."""
+    """Get approved, public portfolio assets for a user."""
     stmt = (
         sa.select(PortfolioAsset)
         .where(
-            PortfolioAsset.freelancer_profile_id == profile_id,
+            PortfolioAsset.user_id == user_id,
             PortfolioAsset.visibility == AssetVisibility.PUBLIC.value,
             PortfolioAsset.review_status == ReviewStatus.APPROVED.value,
         )
