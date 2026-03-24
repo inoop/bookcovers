@@ -35,6 +35,10 @@ export default function FormTagSelect({ name, label, options, freeSolo = false, 
               {...params}
               label={label}
               required={required}
+              inputProps={{
+                ...params.inputProps,
+                required: required && (field.value ?? []).length === 0,
+              }}
               error={!!fieldState.error}
               helperText={fieldState.error?.message}
             />

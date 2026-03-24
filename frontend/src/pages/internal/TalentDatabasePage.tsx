@@ -404,7 +404,7 @@ function NoteRow({
 // Profile curation drawer
 // ---------------------------------------------------------------------------
 
-function ProfileCurationDrawer({
+export function ProfileCurationDrawer({
   profileId,
   open,
   onClose,
