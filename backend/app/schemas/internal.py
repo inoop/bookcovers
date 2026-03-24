@@ -87,3 +87,15 @@ class FolderResponse(BaseModel):
 
 class FolderDetailResponse(FolderResponse):
     members: list[InternalFreelancerCard] = []
+
+
+class WorkSampleCard(BaseModel):
+    id: str
+    title: str | None = None
+    media_url: str | None = None
+    freelancer_name: str
+    freelancer_slug: str | None = None
+    freelancer_profile_id: str
+    created_at: datetime
+
+    model_config = {"from_attributes": True}

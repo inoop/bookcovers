@@ -6,6 +6,16 @@ export interface PaginatedResponse<T> {
   total_pages: number;
 }
 
+export interface WorkSampleCard {
+  id: string;
+  title?: string;
+  media_url?: string;
+  freelancer_name: string;
+  freelancer_slug?: string;
+  freelancer_profile_id: string;
+  created_at: string;
+}
+
 export interface TaxonomyTerm {
   id: string;
   category: string;

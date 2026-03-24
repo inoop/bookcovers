@@ -70,6 +70,7 @@ def create_app() -> FastAPI:
     from app.routers.freelancer.portfolio import router as freelancer_portfolio
     from app.routers.internal.review import router as internal_review
     from app.routers.internal.talent import router as internal_talent
+    from app.routers.internal.work_samples import router as internal_work_samples
 
     app.include_router(public_freelancers)
     app.include_router(public_covers)
@@ -85,6 +86,7 @@ def create_app() -> FastAPI:
     app.include_router(freelancer_portfolio)
     app.include_router(internal_review)
     app.include_router(internal_talent)
+    app.include_router(internal_work_samples)
 
     # Health check
     @app.get("/api/health")

@@ -38,17 +38,26 @@ const mainNavItems = [
   { label: 'Folders', path: '/app/folders', icon: <FolderIcon /> },
 ];
 
-const adminNavItems = [
+const adminOnlyNavItems = [
   { label: 'Taxonomy', path: '/app/admin/taxonomy', icon: <TaxonomyIcon /> },
   { label: 'Cover Catalog', path: '/app/admin/covers', icon: <CollectionsIcon /> },
-  { label: 'Users', path: '/app/admin/users', icon: <ManageAccountsIcon /> },
   { label: 'Settings', path: '/app/admin/settings', icon: <SettingsIcon /> },
+];
+
+const reviewerNavItems = [
+  { label: 'Users', path: '/app/admin/users', icon: <ManageAccountsIcon /> },
 ];
 
 export default function AppLayout() {
   const [drawerOpen, setDrawerOpen] = useState(true);
   const location = useLocation();
   const role = useCurrentRole();
+  const isAdmin = role === 'admin';
+  const isReviewer = role === 'reviewer';
+  const adminSection = [
+    ...(isAdmin ? adminOnlyNavItems : []),
+    ...(isAdmin || isReviewer ? reviewerNavItems : []),
+  ];
   const drawerWidth = drawerOpen ? DRAWER_WIDTH : DRAWER_COLLAPSED;
 
   return (
@@ -105,7 +114,7 @@ export default function AppLayout() {
       >
         <Toolbar /> {/* Spacer for app bar */}
         <Box sx={{ py: 2 }}>
-          {[mainNavItems, ...(role === 'admin' ? [adminNavItems] : [])].map((items, si) => (
+          {[mainNavItems, ...(adminSection.length > 0 ? [adminSection] : [])].map((items, si) => (
             <Box key={si}>
               {si > 0 && (
                 <Box sx={{ mx: 4, my: 2, borderTop: `1px solid ${colors.border.default}` }} />

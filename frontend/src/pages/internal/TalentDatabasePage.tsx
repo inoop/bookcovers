@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import {
   Box,
   Button,
@@ -102,7 +103,6 @@ function formatDate(iso: string | undefined) {
   });
 }
 
-const ALL_STATUSES = ['approved', 'submitted', 'under_review', 'changes_requested', 'rejected', 'archived'];
 const NOTE_TYPES = ['general', 'fit', 'compliance', 'project', 'evaluation'];
 
 // ---------------------------------------------------------------------------
@@ -811,49 +811,6 @@ function FilterRail({
         sx={{ mb: 3 }}
       />
 
-      {/* Status */}
-      <Box sx={{ mb: 3 }}>
-        <Typography
-          variant="caption"
-          sx={{
-            textTransform: 'uppercase',
-            letterSpacing: '0.08em',
-            color: 'text.secondary',
-            display: 'block',
-            mb: 1,
-          }}
-        >
-          Status
-        </Typography>
-        <Stack direction="row" flexWrap="wrap" spacing={0.5} useFlexGap>
-          <Chip
-            label="All"
-            size="small"
-            onClick={() => onChange({ status: undefined, page: 1 })}
-            sx={{
-              bgcolor: !filters.status ? tokens_colors.action.secondary : tokens_colors.surface.soft,
-              color: !filters.status ? '#fff' : tokens_colors.text.body,
-            }}
-          />
-          {ALL_STATUSES.map((s) => (
-            <Chip
-              key={s}
-              label={s.replace(/_/g, ' ')}
-              size="small"
-              onClick={() => onChange({ status: s, page: 1 })}
-              sx={{
-                bgcolor:
-                  filters.status === s
-                    ? tokens_colors.action.secondary
-                    : tokens_colors.surface.soft,
-                color: filters.status === s ? '#fff' : tokens_colors.text.body,
-                textTransform: 'capitalize',
-              }}
-            />
-          ))}
-        </Stack>
-      </Box>
-
       <FilterChipGroup
         label="Audience"
         options={audienceTerms.map((t) => t.label)}
@@ -938,7 +895,6 @@ function FilterRail({
         onClick={() =>
           onChange({
             q: undefined,
-            status: undefined,
             audience: undefined,
             style: undefined,
             genre: undefined,
@@ -964,6 +920,7 @@ function FilterRail({
 // ---------------------------------------------------------------------------
 
 export default function TalentDatabasePage() {
+  const [searchParams] = useSearchParams();
   const [filters, setFilters] = useState<InternalFreelancerFilters>({ page: 1, page_size: 24 });
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [selectedProfileId, setSelectedProfileId] = useState<string | null>(null);
@@ -971,7 +928,13 @@ export default function TalentDatabasePage() {
     null
   );
 
-  const { data, isLoading } = useInternalFreelancers(filters);
+  // Support ?open=<profile_id> deep-link from Work Samples
+  useEffect(() => {
+    const openId = searchParams.get('open');
+    if (openId) setSelectedProfileId(openId);
+  }, [searchParams]);
+
+  const { data, isLoading } = useInternalFreelancers({ ...filters, status: 'approved' });
   const profiles = data?.items ?? [];
   const total = data?.total ?? 0;
   const totalPages = data?.total_pages ?? 0;

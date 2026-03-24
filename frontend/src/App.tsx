@@ -9,6 +9,7 @@ import HomePage from './pages/public/HomePage';
 import FreelancerDirectoryPage from './pages/public/FreelancerDirectoryPage';
 import FreelancerProfilePage from './pages/public/FreelancerProfilePage';
 import CoverArchivePage from './pages/public/CoverArchivePage';
+import InternalCoverArchivePage from './pages/internal/CoverArchivePage';
 import CoverDetailPage from './pages/public/CoverDetailPage';
 import TalentDatabasePage from './pages/internal/TalentDatabasePage';
 import ReviewQueuePage from './pages/internal/ReviewQueuePage';
@@ -50,7 +51,7 @@ export default function App() {
             <Route path="/app" element={<AppLayout />}>
               <Route index element={<TalentDatabasePage />} />
               <Route path="talent" element={<TalentDatabasePage />} />
-              <Route path="covers" element={<CoverArchivePage />} />
+              <Route path="covers" element={<InternalCoverArchivePage />} />
               <Route path="review" element={<ReviewQueuePage />} />
               <Route path="folders" element={<FoldersPage />} />
               <Route path="folders/:folderId" element={<FolderDetailPage />} />
