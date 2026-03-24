@@ -20,6 +20,12 @@ async def lifespan(app: FastAPI):
 
         from app.seed import seed
         await seed()
+
+        from app.routers.admin.settings import seed_default_settings
+        from app.database import async_session_factory
+        async with async_session_factory() as db:
+            await seed_default_settings(db)
+            await db.commit()
     yield
 
 
@@ -54,6 +60,12 @@ def create_app() -> FastAPI:
     from app.routers.public.covers import router as public_covers
     from app.routers.public.taxonomy import router as public_taxonomy
     from app.routers.admin.taxonomy import router as admin_taxonomy
+    from app.routers.admin.covers import router as admin_covers
+    from app.routers.admin.users import router as admin_users
+    from app.routers.admin.orders import router as admin_orders
+    from app.routers.admin.content import router as admin_content
+    from app.routers.admin.concierge import router as admin_concierge
+    from app.routers.admin.settings import router as admin_settings
     from app.routers.freelancer.profile import router as freelancer_profile
     from app.routers.freelancer.portfolio import router as freelancer_portfolio
     from app.routers.internal.review import router as internal_review
@@ -63,6 +75,12 @@ def create_app() -> FastAPI:
     app.include_router(public_covers)
     app.include_router(public_taxonomy)
     app.include_router(admin_taxonomy)
+    app.include_router(admin_covers)
+    app.include_router(admin_users)
+    app.include_router(admin_orders)
+    app.include_router(admin_content)
+    app.include_router(admin_concierge)
+    app.include_router(admin_settings)
     app.include_router(freelancer_profile)
     app.include_router(freelancer_portfolio)
     app.include_router(internal_review)

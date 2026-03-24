@@ -368,6 +368,214 @@ export interface NoteUpdateRequest {
   body?: string;
 }
 
+// --- Admin types ---
+
+export interface TaxonomyTermAdmin {
+  id: string;
+  category: string;
+  label: string;
+  internal_label?: string;
+  slug?: string;
+  sort_order: number;
+  is_active: boolean;
+  aliases?: string[];
+}
+
+export interface TaxonomyTermCreateRequest {
+  category: string;
+  label: string;
+  internal_label?: string;
+  slug?: string;
+  sort_order?: number;
+  is_active?: boolean;
+  aliases?: string[];
+}
+
+export interface TaxonomyTermUpdateRequest {
+  label?: string;
+  internal_label?: string;
+  slug?: string;
+  sort_order?: number;
+  is_active?: boolean;
+  aliases?: string[];
+}
+
+export interface CoverAdminResponse {
+  id: string;
+  slug?: string;
+  title: string;
+  subtitle?: string;
+  author_name: string;
+  publisher?: string;
+  imprint?: string;
+  publication_date?: string;
+  audience_tags?: string[];
+  genre_tags?: string[];
+  visual_tags?: string[];
+  primary_image_asset_id: string;
+  primary_image_url?: string;
+  external_book_url?: string;
+  visibility: string;
+  contributors: ContributorResponse[];
+  created_at: string;
+  updated_at: string;
+}
+
+export interface CoverCreateRequest {
+  title: string;
+  author_name: string;
+  subtitle?: string;
+  publisher?: string;
+  imprint?: string;
+  publication_date?: string;
+  audience_tags?: string[];
+  genre_tags?: string[];
+  visual_tags?: string[];
+  external_book_url?: string;
+  primary_image_asset_id: string;
+  visibility?: string;
+}
+
+export interface CoverUpdateRequest {
+  title?: string;
+  author_name?: string;
+  subtitle?: string;
+  publisher?: string;
+  imprint?: string;
+  publication_date?: string;
+  audience_tags?: string[];
+  genre_tags?: string[];
+  visual_tags?: string[];
+  external_book_url?: string;
+  primary_image_asset_id?: string;
+  visibility?: string;
+}
+
+export interface ContributorCreateRequest {
+  contributor_name: string;
+  contributor_type?: string;
+  freelancer_profile_id?: string;
+}
+
+export interface UserAdminResponse {
+  id: string;
+  external_id: string;
+  email: string;
+  display_name: string;
+  role: string;
+  is_active: boolean;
+  created_at: string;
+}
+
+export interface BriefOrderAdminResponse {
+  id: string;
+  creative_brief_id: string;
+  amount: number;
+  currency: string;
+  payment_provider?: string;
+  payment_status: string;
+  refund_status: string;
+  created_at: string;
+}
+
+export interface ConciergeOrderAdminResponse {
+  id: string;
+  creative_brief_id?: string;
+  service_name: string;
+  amount: number;
+  currency: string;
+  payment_provider?: string;
+  payment_status: string;
+  refund_status: string;
+  created_at: string;
+}
+
+export interface InquiryAdminResponse {
+  id: string;
+  name: string;
+  email: string;
+  subject?: string;
+  message: string;
+  source_page?: string;
+  created_at: string;
+}
+
+export interface EmailSubscriptionAdminResponse {
+  id: string;
+  email: string;
+  is_confirmed: boolean;
+  subscription_type: string;
+  created_at: string;
+}
+
+export interface ArticleResponse {
+  id: string;
+  title: string;
+  slug?: string;
+  summary?: string;
+  body?: string;
+  category?: string;
+  tags?: string[];
+  is_published: boolean;
+  author_user_id?: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface ArticleCreateRequest {
+  title: string;
+  slug?: string;
+  summary?: string;
+  body?: string;
+  category?: string;
+  tags?: string[];
+  is_published?: boolean;
+}
+
+export interface ArticleUpdateRequest {
+  title?: string;
+  slug?: string;
+  summary?: string;
+  body?: string;
+  category?: string;
+  tags?: string[];
+  is_published?: boolean;
+}
+
+export interface ConciergePackageResponse {
+  id: string;
+  name: string;
+  description?: string;
+  price_cents: number;
+  currency: string;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface ConciergePackageCreateRequest {
+  name: string;
+  description?: string;
+  price_cents: number;
+  currency?: string;
+  is_active?: boolean;
+}
+
+export interface ConciergePackageUpdateRequest {
+  name?: string;
+  description?: string;
+  price_cents?: number;
+  currency?: string;
+  is_active?: boolean;
+}
+
+export interface AppSettingResponse {
+  key: string;
+  value: string;
+  description?: string;
+  updated_at: string;
+}
+
 export interface InternalFreelancerFilters {
   q?: string;
   status?: string;        // comma-separated e.g. "approved,submitted"

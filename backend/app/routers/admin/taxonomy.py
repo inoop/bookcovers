@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import re
+
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 import sqlalchemy as sa
@@ -11,6 +13,13 @@ from app.schemas.taxonomy import TaxonomyTermCreate, TaxonomyTermResponse, Taxon
 from app.services.auth import AuthUser
 
 router = APIRouter(prefix="/api/admin/taxonomy", tags=["admin-taxonomy"])
+
+
+def _slugify(text: str) -> str:
+    text = text.lower().strip()
+    text = re.sub(r"[^\w\s-]", "", text)
+    text = re.sub(r"[\s_-]+", "-", text)
+    return text[:100]
 
 
 @router.get("", response_model=list[TaxonomyTermResponse])
@@ -36,7 +45,10 @@ async def create_taxonomy_term(
     _user: AuthUser = Depends(require_roles("admin")),
     db: AsyncSession = Depends(get_db),
 ):
-    term = TaxonomyTerm(**body.model_dump())
+    data = body.model_dump()
+    if not data.get("slug"):
+        data["slug"] = _slugify(data["label"])
+    term = TaxonomyTerm(**data)
     db.add(term)
     await db.flush()
     await db.refresh(term)

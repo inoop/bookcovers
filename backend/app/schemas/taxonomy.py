@@ -20,7 +20,7 @@ class TaxonomyTermCreate(BaseModel):
     category: str
     label: str
     internal_label: str | None = None
-    slug: str
+    slug: str | None = None
     sort_order: int = 0
     is_active: bool = True
     aliases: list[str] | None = None

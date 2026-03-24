@@ -11,3 +11,6 @@ from app.models.orders import BriefOrder, ConciergeOrder  # noqa: F401
 from app.models.portfolio_asset import PortfolioAsset  # noqa: F401
 from app.models.taxonomy import TaxonomyTerm  # noqa: F401
 from app.models.user import User  # noqa: F401
+from app.models.content import ResourceArticle  # noqa: F401
+from app.models.concierge import ConciergePackage  # noqa: F401
+from app.models.settings import AppSetting  # noqa: F401

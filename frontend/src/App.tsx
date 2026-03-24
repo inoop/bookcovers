@@ -16,6 +16,10 @@ import FoldersPage from './pages/internal/FoldersPage';
 import FolderDetailPage from './pages/internal/FolderDetailPage';
 import ProfileEditorPage from './pages/freelancer/ProfileEditorPage';
 import PortfolioPage from './pages/freelancer/PortfolioPage';
+import TaxonomyManagementPage from './pages/admin/TaxonomyManagementPage';
+import CoverManagementPage from './pages/admin/CoverManagementPage';
+import UserManagementPage from './pages/admin/UserManagementPage';
+import SettingsPage from './pages/admin/SettingsPage';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -50,6 +54,10 @@ export default function App() {
               <Route path="review" element={<ReviewQueuePage />} />
               <Route path="folders" element={<FoldersPage />} />
               <Route path="folders/:folderId" element={<FolderDetailPage />} />
+              <Route path="admin/taxonomy" element={<TaxonomyManagementPage />} />
+              <Route path="admin/covers" element={<CoverManagementPage />} />
+              <Route path="admin/users" element={<UserManagementPage />} />
+              <Route path="admin/settings" element={<SettingsPage />} />
             </Route>
 
             {/* Freelancer portal */}

@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useCurrentRole } from '../api/hooks/useCurrentRole';
 import {
   AppBar,
   Box,
@@ -20,6 +21,8 @@ import {
   Folder as FolderIcon,
   Settings as SettingsIcon,
   Category as TaxonomyIcon,
+  Collections as CollectionsIcon,
+  ManageAccounts as ManageAccountsIcon,
 } from '@mui/icons-material';
 import { Outlet, Link as RouterLink, useLocation } from 'react-router-dom';
 import DevRoleSwitcher from '../components/shared/DevRoleSwitcher';
@@ -28,26 +31,24 @@ import { colors, fonts } from '../theme/tokens';
 const DRAWER_WIDTH = 280;
 const DRAWER_COLLAPSED = 88;
 
-const navSections = [
-  {
-    items: [
-      { label: 'Talent Database', path: '/app/talent', icon: <PeopleIcon /> },
-      { label: 'Cover Archive', path: '/app/covers', icon: <CoversIcon /> },
-      { label: 'Review Queue', path: '/app/review', icon: <ReviewIcon /> },
-      { label: 'Folders', path: '/app/folders', icon: <FolderIcon /> },
-    ],
-  },
-  {
-    items: [
-      { label: 'Taxonomy', path: '/app/admin/taxonomy', icon: <TaxonomyIcon /> },
-      { label: 'Settings', path: '/app/admin/settings', icon: <SettingsIcon /> },
-    ],
-  },
+const mainNavItems = [
+  { label: 'Talent Database', path: '/app/talent', icon: <PeopleIcon /> },
+  { label: 'Cover Archive', path: '/app/covers', icon: <CoversIcon /> },
+  { label: 'Review Queue', path: '/app/review', icon: <ReviewIcon /> },
+  { label: 'Folders', path: '/app/folders', icon: <FolderIcon /> },
+];
+
+const adminNavItems = [
+  { label: 'Taxonomy', path: '/app/admin/taxonomy', icon: <TaxonomyIcon /> },
+  { label: 'Cover Catalog', path: '/app/admin/covers', icon: <CollectionsIcon /> },
+  { label: 'Users', path: '/app/admin/users', icon: <ManageAccountsIcon /> },
+  { label: 'Settings', path: '/app/admin/settings', icon: <SettingsIcon /> },
 ];
 
 export default function AppLayout() {
   const [drawerOpen, setDrawerOpen] = useState(true);
   const location = useLocation();
+  const role = useCurrentRole();
   const drawerWidth = drawerOpen ? DRAWER_WIDTH : DRAWER_COLLAPSED;
 
   return (
@@ -104,13 +105,13 @@ export default function AppLayout() {
       >
         <Toolbar /> {/* Spacer for app bar */}
         <Box sx={{ py: 2 }}>
-          {navSections.map((section, si) => (
+          {[mainNavItems, ...(role === 'admin' ? [adminNavItems] : [])].map((items, si) => (
             <Box key={si}>
               {si > 0 && (
                 <Box sx={{ mx: 4, my: 2, borderTop: `1px solid ${colors.border.default}` }} />
               )}
               <List disablePadding>
-                {section.items.map((item) => {
+                {items.map((item) => {
                   const isActive = location.pathname.startsWith(item.path);
                   return (
                     <ListItem key={item.path} disablePadding>
