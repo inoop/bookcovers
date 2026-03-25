@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useForm, FormProvider } from 'react-hook-form';
 import {
   Alert, Box, Button, Chip, CircularProgress, Collapse, Dialog, DialogActions,
@@ -9,7 +9,10 @@ import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import ExpandLessIcon from '@mui/icons-material/ExpandLess';
 import AddIcon from '@mui/icons-material/Add';
 import DeleteIcon from '@mui/icons-material/Delete';
-import { useOwnProfile, useCreateProfile, useUpdateProfile, useSubmitProfile, useRetractProfile } from '../../api/hooks/useProfile';
+import InsertDriveFileIcon from '@mui/icons-material/InsertDriveFile';
+import PersonIcon from '@mui/icons-material/Person';
+import { resolveMediaUrl, createThumbnail } from '../../utils/media';
+import { useOwnProfile, useCreateProfile, useUpdateProfile, useSubmitProfile, useRetractProfile, useUploadAvatar, useDeleteAvatar } from '../../api/hooks/useProfile';
 import { useOwnPortfolio, useUploadAsset, useDeleteAsset } from '../../api/hooks/usePortfolio';
 import { useTaxonomy } from '../../api/hooks/useTaxonomy';
 import FormTextField from '../../components/forms/FormTextField';
@@ -40,9 +43,16 @@ export default function ProfileEditorPage() {
   const { data: genreTerms } = useTaxonomy('genre');
   const { data: imageTagTerms } = useTaxonomy('image_tag');
 
+  const uploadAvatar = useUploadAvatar();
+  const deleteAvatar = useDeleteAvatar();
+
   const { data: portfolioAssets } = useOwnPortfolio();
   const uploadAsset = useUploadAsset();
   const deleteAsset = useDeleteAsset();
+
+  const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
+  const [avatarError, setAvatarError] = useState<string | null>(null);
+  const avatarInputRef = useRef<HTMLInputElement>(null);
 
   const [aboutOpen, setAboutOpen] = useState(true);
   const [classOpen, setClassOpen] = useState(true);
@@ -54,6 +64,44 @@ export default function ProfileEditorPage() {
   const [saveMsg, setSaveMsg] = useState<string | null>(null);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [retractError, setRetractError] = useState<string | null>(null);
+  const [pendingAsset, setPendingAsset] = useState<string | null>(null);
+  const prevAssetsLength = useRef(0);
+
+  // Clear the pending thumbnail once the new asset lands in the list
+  useEffect(() => {
+    const currentLength = portfolioAssets?.length ?? 0;
+    if (pendingAsset !== null && currentLength > prevAssetsLength.current) {
+      setPendingAsset(null);
+    }
+    prevAssetsLength.current = currentLength;
+  }, [portfolioAssets, pendingAsset]);
+
+  const handleAvatarChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setAvatarError(null);
+    try {
+      const thumbnail = await createThumbnail(file);
+      setAvatarPreview(thumbnail);
+      await uploadAvatar.mutateAsync(file);
+      setAvatarPreview(null);
+    } catch {
+      setAvatarPreview(null);
+      setAvatarError('Upload failed. Please try again.');
+    }
+    e.target.value = '';
+  };
+
+  const handleUpload = async (file: File) => {
+    const thumbnail = file.type.startsWith('image/') ? await createThumbnail(file) : null;
+    setPendingAsset(thumbnail);
+    try {
+      await uploadAsset.mutateAsync(file);
+    } catch (e) {
+      setPendingAsset(null);
+      throw e;
+    }
+  };
   const [submitSuccessOpen, setSubmitSuccessOpen] = useState(false);
 
   const methods = useForm<ProfileUpdateRequest>({ defaultValues: {} });
@@ -216,6 +264,77 @@ export default function ProfileEditorPage() {
         <SectionHeader title="About Me" open={aboutOpen} onToggle={() => setAboutOpen(!aboutOpen)} />
         <Collapse in={aboutOpen}>
           <Box sx={{ display: 'grid', gap: 5, mb: 6 }}>
+            <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 2 }}>
+              <Box
+                sx={{
+                  width: 96,
+                  height: 96,
+                  borderRadius: '50%',
+                  overflow: 'hidden',
+                  border: `2px solid ${colors.border.default}`,
+                  backgroundColor: colors.surface.raised,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  position: 'relative',
+                }}
+              >
+                {(() => {
+                  const src = avatarPreview ?? resolveMediaUrl(profile?.avatar_url);
+                  return src ? (
+                    <Box
+                      component="img"
+                      src={src}
+                      sx={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+                    />
+                  ) : (
+                    <PersonIcon sx={{ fontSize: 48, color: colors.text.muted }} />
+                  );
+                })()}
+                {uploadAvatar.isPending && (
+                  <Box sx={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(255,255,255,0.6)' }}>
+                    <CircularProgress size={28} />
+                  </Box>
+                )}
+              </Box>
+              {isEditable && (
+                <>
+                  <input
+                    ref={avatarInputRef}
+                    type="file"
+                    accept="image/jpeg,image/png,image/webp"
+                    style={{ display: 'none' }}
+                    onChange={handleAvatarChange}
+                  />
+                  <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
+                    <Button
+                      type="button"
+                      size="small"
+                      variant="outlined"
+                      onClick={() => avatarInputRef.current?.click()}
+                      disabled={uploadAvatar.isPending || deleteAvatar.isPending}
+                    >
+                      {profile?.avatar_url ? 'Change photo' : 'Upload photo'}
+                    </Button>
+                    {profile?.avatar_url && (
+                      <Button
+                        type="button"
+                        size="small"
+                        color="error"
+                        onClick={() => deleteAvatar.mutate()}
+                        disabled={uploadAvatar.isPending || deleteAvatar.isPending}
+                      >
+                        Remove
+                      </Button>
+                    )}
+                  </Box>
+                  {avatarError && (
+                    <Typography variant="body2" sx={{ color: 'error.main' }}>{avatarError}</Typography>
+                  )}
+                </>
+              )}
+            </Box>
+
             <Box sx={{ display: 'flex', gap: 3, alignItems: 'center' }}>
               <FormSwitch name="is_self_submission" label="I am submitting for myself" />
             </Box>
@@ -341,10 +460,10 @@ export default function ProfileEditorPage() {
               </Typography>
 
               {isEditable && (
-                <FormFileUpload onUpload={async (file) => { await uploadAsset.mutateAsync(file); }} />
+                <FormFileUpload onUpload={handleUpload} />
               )}
 
-              {(portfolioAssets ?? []).length > 0 && (
+              {((portfolioAssets ?? []).length > 0 || pendingAsset) && (
                 <Box
                   sx={{
                     display: 'grid',
@@ -353,9 +472,54 @@ export default function ProfileEditorPage() {
                     mt: 4,
                   }}
                 >
-                  {(portfolioAssets ?? []).map((asset) => (
+                  {(portfolioAssets ?? []).map((asset) => {
+                    const mediaUrl = resolveMediaUrl(asset.media_url);
+                    return (
+                      <Box
+                        key={asset.id}
+                        sx={{
+                          position: 'relative',
+                          borderRadius: 2,
+                          overflow: 'hidden',
+                          border: `1px solid ${colors.border.default}`,
+                        }}
+                      >
+                        {mediaUrl ? (
+                          <Box
+                            component="img"
+                            src={mediaUrl}
+                            sx={{ width: '100%', height: 120, objectFit: 'cover', display: 'block' }}
+                          />
+                        ) : (
+                          <Box sx={{ height: 120, backgroundColor: colors.surface.raised, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                            <InsertDriveFileIcon sx={{ fontSize: 36, color: colors.text.muted }} />
+                          </Box>
+                        )}
+                        {isEditable && (
+                          <IconButton
+                            size="small"
+                            onClick={() => deleteAsset.mutate(asset.id)}
+                            sx={{
+                              position: 'absolute',
+                              top: 4,
+                              right: 4,
+                              backgroundColor: 'rgba(255,255,255,0.85)',
+                              '&:hover': { backgroundColor: 'rgba(255,255,255,1)' },
+                            }}
+                          >
+                            <DeleteIcon fontSize="small" sx={{ color: colors.status.error }} />
+                          </IconButton>
+                        )}
+                        {asset.title && (
+                          <Typography variant="body2" sx={{ p: 1, fontSize: '0.6875rem', color: colors.text.secondary }}>
+                            {asset.title}
+                          </Typography>
+                        )}
+                      </Box>
+                    );
+                  })}
+                  {pendingAsset !== null && (
                     <Box
-                      key={asset.id}
                       sx={{
                         position: 'relative',
                         borderRadius: 2,
@@ -363,37 +527,24 @@ export default function ProfileEditorPage() {
                         border: `1px solid ${colors.border.default}`,
                       }}
                     >
-                      <Box
-                        sx={{
-                          height: 120,
-                          backgroundColor: colors.surface.raised,
-                          backgroundImage: asset.media_url ? `url(${asset.media_url})` : 'none',
-                          backgroundSize: 'cover',
-                          backgroundPosition: 'center',
-                        }}
-                      />
-                      {isEditable && (
-                        <IconButton
-                          size="small"
-                          onClick={() => deleteAsset.mutate(asset.id)}
-                          sx={{
-                            position: 'absolute',
-                            top: 4,
-                            right: 4,
-                            backgroundColor: 'rgba(255,255,255,0.85)',
-                            '&:hover': { backgroundColor: 'rgba(255,255,255,1)' },
-                          }}
-                        >
-                          <DeleteIcon fontSize="small" sx={{ color: colors.status.error }} />
-                        </IconButton>
+                      {pendingAsset ? (
+                        <Box
+                          component="img"
+                          src={pendingAsset}
+                          sx={{ width: '100%', height: 120, objectFit: 'cover', display: 'block' }}
+                        />
+                      ) : (
+                        <Box sx={{ height: 120, backgroundColor: colors.surface.raised, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                          <InsertDriveFileIcon sx={{ fontSize: 36, color: colors.text.muted }} />
+                        </Box>
                       )}
-                      {asset.title && (
-                        <Typography variant="body2" sx={{ p: 1, fontSize: '0.6875rem', color: colors.text.secondary }}>
-                          {asset.title}
-                        </Typography>
+                      {uploadAsset.isPending && (
+                        <Box sx={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(255,255,255,0.6)' }}>
+                          <CircularProgress size={32} />
+                        </Box>
                       )}
                     </Box>
-                  ))}
+                  )}
                 </Box>
               )}
             </Box>

@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import re
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, UploadFile, File
 from sqlalchemy.ext.asyncio import AsyncSession
 import sqlalchemy as sa
 
@@ -18,7 +18,9 @@ from app.schemas.freelancer import (
     PortfolioAssetPublicResponse,
 )
 from app.services.auth import AuthUser
-from app.services.storage import get_storage_service, StorageService
+from app.services.storage import get_storage_service, StorageService, generate_storage_key
+from app.models.media import MediaAsset
+from app.config import get_settings
 
 router = APIRouter(prefix="/api/freelancer/profile", tags=["freelancer-profile"])
 
@@ -86,6 +88,12 @@ async def _build_response(
             )
         )
 
+    avatar_url = None
+    if profile.avatar_asset_id:
+        avatar_media = await db.get(MediaAsset, profile.avatar_asset_id)
+        if avatar_media:
+            avatar_url = storage.get_url(avatar_media.storage_key)
+
     return FreelancerOwnProfileResponse(
         id=profile.id,
         slug=profile.slug,
@@ -115,6 +123,7 @@ async def _build_response(
         books_excited_about=profile.books_excited_about,
         profile_statement=profile.profile_statement,
         approved_for_hire=profile.approved_for_hire,
+        avatar_url=avatar_url,
         portfolio_assets=asset_responses,
     )
 
@@ -279,6 +288,68 @@ async def retract_profile(
         )
 
     profile.status = ProfileStatus.DRAFT.value
+    await db.flush()
+    await db.refresh(profile)
+    return await _build_response(db, profile, storage)
+
+
+ALLOWED_AVATAR_TYPES = {"image/jpeg", "image/png", "image/webp"}
+MAX_AVATAR_SIZE = 5 * 1024 * 1024  # 5MB
+
+
+@router.post("/avatar", response_model=FreelancerOwnProfileResponse)
+async def upload_avatar(
+    file: UploadFile = File(...),
+    user: AuthUser = Depends(require_roles("freelancer")),
+    db: AsyncSession = Depends(get_db),
+    storage: StorageService = Depends(get_storage_service),
+):
+    if file.content_type not in ALLOWED_AVATAR_TYPES:
+        raise HTTPException(
+            400,
+            f"File type '{file.content_type}' not allowed. Accepted: JPEG, PNG, WebP",
+        )
+
+    content = await file.read()
+    if len(content) > MAX_AVATAR_SIZE:
+        raise HTTPException(400, "Avatar file exceeds 5MB limit")
+    await file.seek(0)
+
+    profile = await _get_own_profile(db, user)
+    if not profile:
+        raise HTTPException(404, "No profile found. Create one first.")
+
+    storage_key = generate_storage_key(file.filename or "avatar.jpg", prefix="avatars")
+    await storage.upload(file, storage_key)
+
+    settings = get_settings()
+    media = MediaAsset(
+        uploaded_by_user_id=user.id,
+        filename=file.filename or "avatar.jpg",
+        content_type=file.content_type or "image/jpeg",
+        size_bytes=len(content),
+        storage_backend=settings.STORAGE_BACKEND,
+        storage_key=storage_key,
+    )
+    db.add(media)
+    await db.flush()
+
+    profile.avatar_asset_id = media.id
+    await db.flush()
+    await db.refresh(profile)
+    return await _build_response(db, profile, storage)
+
+
+@router.delete("/avatar", response_model=FreelancerOwnProfileResponse)
+async def delete_avatar(
+    user: AuthUser = Depends(require_roles("freelancer")),
+    db: AsyncSession = Depends(get_db),
+    storage: StorageService = Depends(get_storage_service),
+):
+    profile = await _get_own_profile(db, user)
+    if not profile:
+        raise HTTPException(404, "No profile found.")
+    profile.avatar_asset_id = None
     await db.flush()
     await db.refresh(profile)
     return await _build_response(db, profile, storage)

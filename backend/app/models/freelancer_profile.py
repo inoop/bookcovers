@@ -42,6 +42,9 @@ class FreelancerProfile(TimestampMixin, Base):
     resume_asset_id: Mapped[str | None] = mapped_column(
         sa.String(36), sa.ForeignKey("media_assets.id"), nullable=True
     )
+    avatar_asset_id: Mapped[str | None] = mapped_column(
+        sa.String(36), sa.ForeignKey("media_assets.id"), nullable=True
+    )
 
     # Locations
     current_locations: Mapped[list | None] = mapped_column(PortableJSON, nullable=True)
@@ -90,3 +93,4 @@ class FreelancerProfile(TimestampMixin, Base):
     folder_memberships = relationship("FolderMembership", back_populates="freelancer_profile")
     favorites = relationship("Favorite", back_populates="freelancer_profile")
     resume_asset = relationship("MediaAsset", foreign_keys=[resume_asset_id])
+    avatar_asset = relationship("MediaAsset", foreign_keys=[avatar_asset_id])

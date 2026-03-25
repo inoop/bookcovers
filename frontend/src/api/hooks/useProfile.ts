@@ -59,3 +59,31 @@ export function useRetractProfile() {
     onSuccess: () => qc.invalidateQueries({ queryKey: ['own-profile'] }),
   });
 }
+
+export function useDeleteAvatar() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async () => {
+      const { data } = await apiClient.delete<OwnProfileResponse>('/api/freelancer/profile/avatar');
+      return data;
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['own-profile'] }),
+  });
+}
+
+export function useUploadAvatar() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (file: File) => {
+      const formData = new FormData();
+      formData.append('file', file);
+      const { data } = await apiClient.post<OwnProfileResponse>(
+        '/api/freelancer/profile/avatar',
+        formData,
+        { headers: { 'Content-Type': 'multipart/form-data' } }
+      );
+      return data;
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['own-profile'] }),
+  });
+}

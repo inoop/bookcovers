@@ -1,12 +1,14 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import {
   Alert, Box, Card, CardContent, Chip, CircularProgress, IconButton,
   TextField, Typography,
 } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
+import InsertDriveFileIcon from '@mui/icons-material/InsertDriveFile';
 import { useOwnPortfolio, useUploadAsset, useUpdateAsset, useDeleteAsset } from '../../api/hooks/usePortfolio';
 import { useOwnProfile } from '../../api/hooks/useProfile';
 import FormFileUpload from '../../components/forms/FormFileUpload';
+import { resolveMediaUrl, createThumbnail } from '../../utils/media';
 import { colors } from '../../theme/tokens';
 
 export default function PortfolioPage() {
@@ -16,11 +18,27 @@ export default function PortfolioPage() {
   const updateAsset = useUpdateAsset();
   const deleteAsset = useDeleteAsset();
   const [deleteError, setDeleteError] = useState<string | null>(null);
+  const [pendingAsset, setPendingAsset] = useState<string | null>(null);
+  const prevAssetsLength = useRef(0);
 
-  const hasProfile = !!profile;
+  // Clear the pending card once the new asset lands in the list
+  useEffect(() => {
+    const current = assets?.length ?? 0;
+    if (pendingAsset !== null && current > prevAssetsLength.current) {
+      setPendingAsset(null);
+    }
+    prevAssetsLength.current = current;
+  }, [assets, pendingAsset]);
 
   const handleUpload = async (file: File) => {
-    await uploadAsset.mutateAsync(file);
+    const thumbnail = file.type.startsWith('image/') ? await createThumbnail(file) : null;
+    setPendingAsset(thumbnail);
+    try {
+      await uploadAsset.mutateAsync(file);
+    } catch (e) {
+      setPendingAsset(null);
+      throw e;
+    }
   };
 
   const handleTitleChange = (id: string, title: string) => {
@@ -36,7 +54,7 @@ export default function PortfolioPage() {
     }
   };
 
-  if (!hasProfile) {
+  if (!profile) {
     return (
       <>
         <Typography variant="h1" sx={{ mb: 4 }}>Portfolio</Typography>
@@ -66,7 +84,7 @@ export default function PortfolioPage() {
         <Box sx={{ display: 'flex', justifyContent: 'center', py: 8 }}>
           <CircularProgress />
         </Box>
-      ) : assets && assets.length > 0 ? (
+      ) : (assets && assets.length > 0) || pendingAsset !== null ? (
         <Box
           sx={{
             display: 'grid',
@@ -75,26 +93,25 @@ export default function PortfolioPage() {
             mt: 6,
           }}
         >
-          {assets.map((asset) => (
+          {assets?.map((asset) => {
+            const mediaUrl = resolveMediaUrl(asset.media_url);
+            return (
             <Card key={asset.id}>
-              <Box
-                sx={{
-                  height: 180,
-                  backgroundColor: colors.surface.raised,
-                  backgroundImage: asset.media_url ? `url(${asset.media_url})` : 'none',
-                  backgroundSize: 'cover',
-                  backgroundPosition: 'center',
-                  position: 'relative',
-                }}
-              >
-                <Box sx={{ position: 'absolute', top: 8, right: 8, display: 'flex', gap: 1 }}>
+              <Box sx={{ height: 180, overflow: 'hidden', position: 'relative', backgroundColor: colors.surface.raised, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                {mediaUrl ? (
+                  <Box
+                    component="img"
+                    src={mediaUrl}
+                    sx={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+                  />
+                ) : (
+                  <InsertDriveFileIcon sx={{ fontSize: 48, color: colors.text.muted }} />
+                )}
+                <Box sx={{ position: 'absolute', top: 8, right: 8 }}>
                   <Chip
                     label={asset.asset_type}
                     size="small"
-                    sx={{
-                      backgroundColor: 'rgba(255,255,255,0.9)',
-                      fontSize: '0.625rem',
-                    }}
+                    sx={{ backgroundColor: 'rgba(255,255,255,0.9)', fontSize: '0.625rem' }}
                   />
                 </Box>
               </Box>
@@ -118,17 +135,43 @@ export default function PortfolioPage() {
                     variant="outlined"
                     sx={{ fontSize: '0.625rem' }}
                   />
-                  <IconButton
-                    size="small"
-                    onClick={() => handleDelete(asset.id)}
-                    sx={{ color: colors.status.error }}
-                  >
+                  <IconButton size="small" onClick={() => handleDelete(asset.id)} sx={{ color: colors.status.error }}>
                     <DeleteIcon fontSize="small" />
                   </IconButton>
                 </Box>
               </CardContent>
             </Card>
-          ))}
+            );
+          })}
+
+          {pendingAsset !== null && (
+            <Card>
+              <Box sx={{ height: 180, overflow: 'hidden', position: 'relative', backgroundColor: colors.surface.raised, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                {pendingAsset ? (
+                  <Box
+                    component="img"
+                    src={pendingAsset}
+                    sx={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+                  />
+                ) : (
+                  <InsertDriveFileIcon sx={{ fontSize: 48, color: colors.text.muted }} />
+                )}
+                {uploadAsset.isPending && (
+                  <Box sx={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(255,255,255,0.6)' }}>
+                    <CircularProgress size={40} />
+                  </Box>
+                )}
+              </Box>
+              <CardContent sx={{ p: 3 }}>
+                <TextField size="small" placeholder="Add a title..." fullWidth sx={{ mb: 2 }} disabled />
+                <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
+                  <IconButton size="small" disabled sx={{ color: colors.status.error }}>
+                    <DeleteIcon fontSize="small" />
+                  </IconButton>
+                </Box>
+              </CardContent>
+            </Card>
+          )}
         </Box>
       ) : (
         <Box sx={{ textAlign: 'center', py: 8, mt: 4 }}>

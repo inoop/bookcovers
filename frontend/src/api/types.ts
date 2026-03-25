@@ -189,6 +189,7 @@ export interface OwnProfileResponse {
   books_excited_about?: string[];
   profile_statement?: string;
   approved_for_hire: boolean;
+  avatar_url?: string;
   portfolio_assets: PortfolioAssetResponse[];
 }
 

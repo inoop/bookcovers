@@ -2,7 +2,6 @@ import { useCallback, useState } from 'react';
 import { useDropzone } from 'react-dropzone';
 import { Box, Typography, CircularProgress, Alert } from '@mui/material';
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
-import InsertDriveFileIcon from '@mui/icons-material/InsertDriveFile';
 import { colors } from '../../theme/tokens';
 
 interface FormFileUploadProps {
@@ -27,9 +26,6 @@ export default function FormFileUpload({
 }: FormFileUploadProps) {
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
-  const [previewIsImage, setPreviewIsImage] = useState(false);
-  const [previewFilename, setPreviewFilename] = useState<string>('');
 
   const onDrop = useCallback(
     async (acceptedFiles: File[]) => {
@@ -40,11 +36,6 @@ export default function FormFileUpload({
           continue;
         }
 
-        const url = URL.createObjectURL(file);
-        setPreviewUrl(url);
-        setPreviewIsImage(file.type.startsWith('image/'));
-        setPreviewFilename(file.name);
-
         setUploading(true);
         try {
           await onUpload(file);
@@ -52,8 +43,6 @@ export default function FormFileUpload({
           setError(e?.response?.data?.detail || 'Upload failed');
         } finally {
           setUploading(false);
-          URL.revokeObjectURL(url);
-          setPreviewUrl(null);
         }
       }
     },
@@ -86,45 +75,7 @@ export default function FormFileUpload({
         }}
       >
         <input {...getInputProps()} />
-        {previewUrl ? (
-          <Box sx={{ position: 'relative', width: '100%' }}>
-            {previewIsImage ? (
-              <Box
-                component="img"
-                src={previewUrl}
-                sx={{
-                  width: '100%',
-                  maxHeight: 200,
-                  objectFit: 'contain',
-                  borderRadius: 1,
-                  display: 'block',
-                }}
-              />
-            ) : (
-              <Box sx={{ py: 2, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1 }}>
-                <InsertDriveFileIcon sx={{ fontSize: 48, color: colors.text.muted }} />
-                <Typography variant="body2" sx={{ color: colors.text.secondary }}>
-                  {previewFilename}
-                </Typography>
-              </Box>
-            )}
-            {uploading && (
-              <Box
-                sx={{
-                  position: 'absolute',
-                  inset: 0,
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  backgroundColor: 'rgba(255,255,255,0.6)',
-                  borderRadius: 1,
-                }}
-              >
-                <CircularProgress size={40} />
-              </Box>
-            )}
-          </Box>
-        ) : uploading ? (
+        {uploading ? (
           <CircularProgress size={32} />
         ) : (
           <>

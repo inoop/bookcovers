@@ -138,6 +138,7 @@ class FreelancerOwnProfileResponse(BaseModel):
     books_excited_about: list[str] | None = None
     profile_statement: str | None = None
     approved_for_hire: bool = False
+    avatar_url: str | None = None
     portfolio_assets: list[PortfolioAssetPublicResponse] = []
 
     model_config = {"from_attributes": True}

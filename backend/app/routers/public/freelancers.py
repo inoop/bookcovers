@@ -53,7 +53,7 @@ async def list_freelancers(
 
     cards = []
     for p in profiles:
-        hero_url = await _get_hero_image(db, p.id, storage)
+        hero_url = await _get_hero_image(db, p, storage)
         cards.append(
             FreelancerCardResponse(
                 id=p.id,
@@ -145,15 +145,20 @@ async def get_freelancer_detail(
 
 
 async def _get_hero_image(
-    db: AsyncSession, profile_id: str, storage: StorageService
+    db: AsyncSession, profile: FreelancerProfile, storage: StorageService
 ) -> str | None:
-    """Get the first approved public portfolio asset URL as the hero image."""
+    """Use avatar if set, otherwise fall back to first approved public portfolio asset."""
     from app.models.media import MediaAsset
+
+    if profile.avatar_asset_id:
+        media = await db.get(MediaAsset, profile.avatar_asset_id)
+        if media:
+            return storage.get_url(media.storage_key)
 
     stmt = (
         sa.select(PortfolioAsset)
         .where(
-            PortfolioAsset.freelancer_profile_id == profile_id,
+            PortfolioAsset.user_id == profile.user_id,
             PortfolioAsset.visibility == AssetVisibility.PUBLIC.value,
             PortfolioAsset.review_status == ReviewStatus.APPROVED.value,
         )
@@ -165,6 +170,4 @@ async def _get_hero_image(
     if not asset:
         return None
     media = await db.get(MediaAsset, asset.media_asset_id)
-    if not media:
-        return None
-    return storage.get_url(media.storage_key)
+    return storage.get_url(media.storage_key) if media else None
