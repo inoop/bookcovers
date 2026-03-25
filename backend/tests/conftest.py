@@ -2,7 +2,6 @@
 from __future__ import annotations
 
 import io
-import pytest
 import pytest_asyncio
 from httpx import ASGITransport, AsyncClient
 
@@ -70,7 +69,7 @@ async def create_profile(client: AsyncClient, headers=None, name="Test Artist", 
 async def create_submitted_profile(client: AsyncClient, headers=None, name="Test Artist", email="test@example.com"):
     """Create a profile and submit it for review (with all required fields + portfolio asset)."""
     headers = headers or FREELANCER_HEADERS
-    profile = await create_profile(client, headers, name, email)
+    await create_profile(client, headers, name, email)
 
     await client.put(
         "/api/freelancer/profile",

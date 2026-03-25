@@ -4,7 +4,6 @@ import math
 
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.orm import selectinload
 import sqlalchemy as sa
 
 from app.database import get_db

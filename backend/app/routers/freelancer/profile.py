@@ -9,7 +9,7 @@ import sqlalchemy as sa
 from app.database import get_db
 from app.middleware.rbac import require_roles
 from app.models.freelancer_profile import FreelancerProfile, ProfileStatus
-from app.models.portfolio_asset import PortfolioAsset, AssetVisibility, ReviewStatus
+from app.models.portfolio_asset import PortfolioAsset, AssetVisibility
 from app.models.media import MediaAsset
 from app.schemas.freelancer import (
     FreelancerOwnProfileResponse,

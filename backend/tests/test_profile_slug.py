@@ -36,7 +36,7 @@ async def test_update_name_to_collision_gets_unique_slug(client: AsyncClient):
 @pytest.mark.asyncio
 async def test_update_own_name_keeps_slug(client: AsyncClient):
     """Updating your own profile (without name change) should keep the same slug."""
-    p = await create_profile(client, FREELANCER_HEADERS, name="Test Artist", email="a@example.com")
+    await create_profile(client, FREELANCER_HEADERS, name="Test Artist", email="a@example.com")
 
     resp = await client.put(
         "/api/freelancer/profile",

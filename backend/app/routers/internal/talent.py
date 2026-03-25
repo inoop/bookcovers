@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import math
-from typing import List
 
 import sqlalchemy as sa
 from fastapi import APIRouter, Depends, HTTPException, Query

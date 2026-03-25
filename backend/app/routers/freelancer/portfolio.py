@@ -7,7 +7,7 @@ import sqlalchemy as sa
 from app.database import get_db
 from app.middleware.rbac import require_roles
 from app.models.freelancer_profile import FreelancerProfile
-from app.models.media import MediaAsset, StorageBackend
+from app.models.media import MediaAsset
 from app.models.portfolio_asset import (
     PortfolioAsset,
     AssetType,

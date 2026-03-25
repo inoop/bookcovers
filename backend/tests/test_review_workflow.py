@@ -219,7 +219,7 @@ async def test_review_queue_excludes_drafts(client: AsyncClient):
 @pytest.mark.asyncio
 async def test_review_summary_counts(client: AsyncClient):
     # One submitted, one approved
-    p1 = await create_submitted_profile(client, headers=FREELANCER_HEADERS, name="Artist One", email="one@example.com")
+    await create_submitted_profile(client, headers=FREELANCER_HEADERS, name="Artist One", email="one@example.com")
     p2 = await create_submitted_profile(client, headers=FREELANCER2_HEADERS, name="Artist Two", email="two@example.com")
     await _do_action(client, p2["id"], "approve")
 
