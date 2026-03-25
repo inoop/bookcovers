@@ -11,7 +11,6 @@ import {
 } from '@mui/material';
 import {
   ArrowBack as BackIcon,
-  Edit as EditIcon,
   Close as CloseIcon,
   Star as StarIcon,
   StarBorder as StarBorderIcon,
@@ -22,19 +21,9 @@ import {
   useRemoveFromFolder,
   useToggleFavorite,
   useInternalFreelancerDetail,
-  useTalentNotes,
-  useProfileFeedback,
-  useFolders,
-  useAddToFolder,
-  useCreateTalentNote,
-  useUpdateTalentNote,
-  useDeleteTalentNote,
-  useCreateFeedback,
-  useUpdateFolder,
 } from '../../api/hooks/useTalent';
 import { colors as tokens_colors, radii as tokens_radii } from '../../theme/tokens';
 import type { InternalFreelancerCard } from '../../api/types';
-import { ProfileCurationDrawer } from './TalentDatabasePage';
 
 // ---------------------------------------------------------------------------
 // Privacy badge
@@ -79,7 +68,7 @@ function MemberCard({
     <Box
       sx={{
         border: `1px solid ${tokens_colors.border.default}`,
-        borderRadius: tokens_radii.md,
+        borderRadius: tokens_radii.sm,
         overflow: 'hidden',
         bgcolor: 'background.paper',
         '&:hover': { boxShadow: '0 4px 16px rgba(0,0,0,0.08)' },
@@ -179,8 +168,6 @@ export default function FolderDetailPage() {
   if (!folder) {
     return <Typography color="text.secondary">Folder not found.</Typography>;
   }
-
-  const currentUserId = folder.owner_user_id; // approximation for owner check
 
   return (
     <>

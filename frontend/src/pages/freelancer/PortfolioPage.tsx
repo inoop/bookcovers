@@ -7,13 +7,7 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import { useOwnPortfolio, useUploadAsset, useUpdateAsset, useDeleteAsset } from '../../api/hooks/usePortfolio';
 import { useOwnProfile } from '../../api/hooks/useProfile';
 import FormFileUpload from '../../components/forms/FormFileUpload';
-import { colors, fonts } from '../../theme/tokens';
-
-const REVIEW_STATUS_COLORS: Record<string, string> = {
-  pending: colors.status.warning,
-  approved: colors.status.success,
-  rejected: colors.status.error,
-};
+import { colors } from '../../theme/tokens';
 
 export default function PortfolioPage() {
   const { data: profile } = useOwnProfile();

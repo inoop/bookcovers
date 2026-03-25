@@ -30,6 +30,21 @@ def _slugify(name: str) -> str:
     return slug
 
 
+async def _unique_slug(db: AsyncSession, name: str, exclude_profile_id: str | None = None) -> str:
+    base = _slugify(name)
+    slug = base
+    counter = 1
+    while True:
+        stmt = sa.select(FreelancerProfile.id).where(FreelancerProfile.slug == slug)
+        if exclude_profile_id:
+            stmt = stmt.where(FreelancerProfile.id != exclude_profile_id)
+        exists = (await db.execute(stmt)).scalar_one_or_none()
+        if exists is None:
+            return slug
+        counter += 1
+        slug = f"{base}-{counter}"
+
+
 async def _get_own_profile(
     db: AsyncSession, user: AuthUser
 ) -> FreelancerProfile | None:
@@ -115,13 +130,14 @@ async def create_profile(
     if existing:
         raise HTTPException(409, "Profile already exists. Use PUT to update.")
 
+    slug = await _unique_slug(db, body.name)
     profile = FreelancerProfile(
         user_id=user.id,
         name=body.name,
         email=body.email,
         is_self_submission=body.is_self_submission,
         relation_type=body.relation_type,
-        slug=_slugify(body.name),
+        slug=slug,
         status=ProfileStatus.DRAFT.value,
     )
     db.add(profile)
@@ -175,7 +191,7 @@ async def update_profile(
 
     # Re-generate slug if name changed
     if "name" in update_data:
-        profile.slug = _slugify(profile.name)
+        profile.slug = await _unique_slug(db, profile.name, exclude_profile_id=profile.id)
 
     await db.flush()
     await db.refresh(profile)
@@ -205,7 +221,9 @@ async def submit_profile(
         missing.append("Full Name")
     if not profile.email:
         missing.append("Email")
-    if not profile.current_locations:
+    if not profile.current_locations or not any(
+        loc.strip() for loc in profile.current_locations
+    ):
         missing.append("Current Location(s)")
     if not profile.audience_tags:
         missing.append("Audience")

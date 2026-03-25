@@ -9,7 +9,6 @@ import {
   DialogContent,
   DialogTitle,
   FormControl,
-  Grid,
   IconButton,
   InputLabel,
   MenuItem,
@@ -35,7 +34,7 @@ import {
   useDeleteFolder,
 } from '../../api/hooks/useTalent';
 import { colors as tokens_colors, radii as tokens_radii } from '../../theme/tokens';
-import type { FolderResponse, FolderCreateRequest, FolderUpdateRequest } from '../../api/types';
+import type { FolderResponse } from '../../api/types';
 
 // ---------------------------------------------------------------------------
 // Privacy badge
@@ -167,7 +166,7 @@ function FolderCard({
     <Box
       sx={{
         border: `1px solid ${tokens_colors.border.default}`,
-        borderRadius: tokens_radii.md,
+        borderRadius: tokens_radii.sm,
         p: 2.5,
         bgcolor: 'background.paper',
         '&:hover': { boxShadow: '0 4px 16px rgba(0,0,0,0.08)' },

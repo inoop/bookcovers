@@ -1,11 +1,12 @@
 from contextlib import asynccontextmanager
 
-from fastapi import FastAPI
+from fastapi import Depends, FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 
 from app.config import get_settings
 from app.database import Base, engine
+from app.services.auth import AuthUser, get_current_user
 
 
 @asynccontextmanager
@@ -92,6 +93,16 @@ def create_app() -> FastAPI:
     @app.get("/api/health")
     async def health():
         return {"status": "ok", "environment": settings.ENVIRONMENT}
+
+    # Current user info (authoritative role from DB)
+    @app.get("/api/me")
+    async def get_me(user: AuthUser = Depends(get_current_user)):
+        return {
+            "id": user.id,
+            "email": user.email,
+            "display_name": user.display_name,
+            "role": user.role,
+        }
 
     return app
 

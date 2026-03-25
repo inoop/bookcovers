@@ -15,7 +15,6 @@ import type {
   PaginatedResponse,
   FreelancerInternalDetail,
 } from '../types';
-import type { ProfileNote as ReviewProfileNote } from '../types';
 
 // ---------------------------------------------------------------------------
 // Favorites

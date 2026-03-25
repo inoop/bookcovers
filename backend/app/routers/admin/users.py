@@ -4,6 +4,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 import sqlalchemy as sa
 
+from app.config import get_settings
 from app.database import get_db
 from app.middleware.rbac import require_roles
 from app.models.user import User
@@ -43,3 +44,36 @@ async def update_user_role(
     await db.flush()
     await db.refresh(user)
     return user
+
+
+@router.delete("/{user_id}", status_code=204)
+async def delete_user(
+    user_id: str,
+    current_user: AuthUser = Depends(require_roles("admin")),
+    db: AsyncSession = Depends(get_db),
+):
+    if user_id == current_user.id:
+        raise HTTPException(400, "Cannot delete your own account")
+
+    user = await db.get(User, user_id)
+    if not user:
+        raise HTTPException(404, "User not found")
+
+    # Remove from Cognito user pool if applicable
+    settings = get_settings()
+    if settings.AUTH_PROVIDER == "cognito" and user.external_id:
+        import boto3
+        from botocore.exceptions import ClientError
+
+        cognito = boto3.client("cognito-idp", region_name=settings.COGNITO_REGION)
+        try:
+            cognito.admin_delete_user(
+                UserPoolId=settings.COGNITO_USER_POOL_ID,
+                Username=user.external_id,
+            )
+        except ClientError as e:
+            if e.response["Error"]["Code"] != "UserNotFoundException":
+                raise HTTPException(502, f"Failed to remove user from Cognito: {e}")
+
+    await db.delete(user)
+    await db.flush()

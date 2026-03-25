@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import asyncio
 
+from app.config import get_settings
 from app.database import async_session_factory, Base, engine
 from app.models.taxonomy import TaxonomyTerm
 from app.models.user import User, UserRole
@@ -72,6 +73,11 @@ async def seed():
                     db.add(term)
             await db.commit()
             print(f"Seeded {sum(len(v) for v in TAXONOMY_DATA.values())} taxonomy terms.")
+
+        # Only seed sample users in local dev
+        settings = get_settings()
+        if settings.ENVIRONMENT != "local":
+            return
 
         # Seed sample users + profiles for dev
         user_count = (await db.execute(select(func.count()).select_from(User))).scalar_one()

@@ -1,3 +1,4 @@
+import { useRef, useState } from 'react';
 import { Controller, useFormContext } from 'react-hook-form';
 import { Autocomplete, Chip, TextField } from '@mui/material';
 
@@ -11,6 +12,8 @@ interface FormTagSelectProps {
 
 export default function FormTagSelect({ name, label, options, freeSolo = false, required = false }: FormTagSelectProps) {
   const { control } = useFormContext();
+  const [inputValue, setInputValue] = useState('');
+  const pendingRef = useRef('');
 
   return (
     <Controller
@@ -20,10 +23,37 @@ export default function FormTagSelect({ name, label, options, freeSolo = false, 
         <Autocomplete
           multiple
           freeSolo={freeSolo}
-          autoSelect={freeSolo}
           options={options}
           value={field.value ?? []}
-          onChange={(_, newValue) => field.onChange(newValue)}
+          inputValue={inputValue}
+          onInputChange={(_, newInputValue, reason) => {
+            if (reason === 'input') {
+              setInputValue(newInputValue);
+              pendingRef.current = newInputValue;
+            } else if (reason === 'reset') {
+              setInputValue(newInputValue);
+              pendingRef.current = '';
+            } else if (reason === 'clear') {
+              setInputValue('');
+            }
+          }}
+          onChange={(_, newValue) => {
+            field.onChange(newValue);
+            setInputValue('');
+            pendingRef.current = '';
+          }}
+          onBlur={() => {
+            const trimmed = pendingRef.current.trim();
+            if (trimmed && freeSolo) {
+              const current = field.value ?? [];
+              if (!current.includes(trimmed)) {
+                field.onChange([...current, trimmed]);
+              }
+            }
+            setInputValue('');
+            pendingRef.current = '';
+            field.onBlur();
+          }}
           renderTags={(value, getTagProps) =>
             value.map((option, index) => {
               const { key, ...rest } = getTagProps({ index });
@@ -35,12 +65,9 @@ export default function FormTagSelect({ name, label, options, freeSolo = false, 
               {...params}
               label={label}
               required={required}
-              inputProps={{
-                ...params.inputProps,
-                required: required && (field.value ?? []).length === 0,
-              }}
               error={!!fieldState.error}
               helperText={fieldState.error?.message}
+              inputProps={{ ...params.inputProps, required: false }}
             />
           )}
         />

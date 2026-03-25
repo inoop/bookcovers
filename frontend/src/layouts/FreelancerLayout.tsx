@@ -7,7 +7,10 @@ import {
   Typography,
 } from '@mui/material';
 import { Outlet, Link as RouterLink } from 'react-router-dom';
+import { Button } from '@mui/material';
 import DevRoleSwitcher from '../components/shared/DevRoleSwitcher';
+import { useAuth } from '../auth/AuthContext';
+import { cognitoConfig } from '../auth/config';
 import { colors, fonts } from '../theme/tokens';
 
 const navItems = [
@@ -16,6 +19,8 @@ const navItems = [
 ];
 
 export default function FreelancerLayout() {
+  const { user, logout } = useAuth();
+
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
       {/* Top App Bar */}
@@ -76,7 +81,13 @@ export default function FreelancerLayout() {
               <Outlet />
             </Box>
             <Box sx={{ width: 200, flexShrink: 0, display: { xs: 'none', lg: 'block' } }}>
-              <DevRoleSwitcher />
+              {cognitoConfig.enabled ? (
+                <Button size="small" onClick={logout} sx={{ color: colors.text.secondary }}>
+                  {user?.email || 'Sign out'}
+                </Button>
+              ) : (
+                <DevRoleSwitcher />
+              )}
             </Box>
           </Box>
         </Container>

@@ -1,0 +1,14 @@
+{
+  "availability-zones:account=408264629574:region=us-east-1": [
+    "us-east-1a",
+    "us-east-1b",
+    "us-east-1c",
+    "us-east-1d",
+    "us-east-1e",
+    "us-east-1f"
+  ],
+  "hosted-zone:account=408264629574:domainName=nbrouwers.com:region=us-east-1": {
+    "Id": "/hostedzone/Z04179303C6TSLSGPEOLN",
+    "Name": "nbrouwers.com."
+  }
+}

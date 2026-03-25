@@ -2,6 +2,9 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ThemeProvider, CssBaseline } from '@mui/material';
 import theme from './theme/theme';
+import { AuthProvider } from './auth/AuthContext';
+import AuthCallback from './auth/AuthCallback';
+import AuthGuard from './auth/AuthGuard';
 import WebsiteLayout from './layouts/WebsiteLayout';
 import AppLayout from './layouts/AppLayout';
 import FreelancerLayout from './layouts/FreelancerLayout';
@@ -37,37 +40,42 @@ export default function App() {
       <ThemeProvider theme={theme}>
         <CssBaseline />
         <BrowserRouter>
-          <Routes>
-            {/* Public website */}
-            <Route element={<WebsiteLayout />}>
-              <Route path="/" element={<HomePage />} />
-              <Route path="/freelancers" element={<FreelancerDirectoryPage />} />
-              <Route path="/freelancers/:id" element={<FreelancerProfilePage />} />
-              <Route path="/covers" element={<CoverArchivePage />} />
-              <Route path="/covers/:id" element={<CoverDetailPage />} />
-            </Route>
+          <AuthProvider>
+            <Routes>
+              {/* Auth callback */}
+              <Route path="/auth/callback" element={<AuthCallback />} />
 
-            {/* Internal application */}
-            <Route path="/app" element={<AppLayout />}>
-              <Route index element={<TalentDatabasePage />} />
-              <Route path="talent" element={<TalentDatabasePage />} />
-              <Route path="covers" element={<InternalCoverArchivePage />} />
-              <Route path="review" element={<ReviewQueuePage />} />
-              <Route path="folders" element={<FoldersPage />} />
-              <Route path="folders/:folderId" element={<FolderDetailPage />} />
-              <Route path="admin/taxonomy" element={<TaxonomyManagementPage />} />
-              <Route path="admin/covers" element={<CoverManagementPage />} />
-              <Route path="admin/users" element={<UserManagementPage />} />
-              <Route path="admin/settings" element={<SettingsPage />} />
-            </Route>
+              {/* Public website */}
+              <Route element={<WebsiteLayout />}>
+                <Route path="/" element={<HomePage />} />
+                <Route path="/freelancers" element={<FreelancerDirectoryPage />} />
+                <Route path="/freelancers/:id" element={<FreelancerProfilePage />} />
+                <Route path="/covers" element={<CoverArchivePage />} />
+                <Route path="/covers/:id" element={<CoverDetailPage />} />
+              </Route>
 
-            {/* Freelancer portal */}
-            <Route path="/portal" element={<FreelancerLayout />}>
-              <Route index element={<ProfileEditorPage />} />
-              <Route path="profile" element={<ProfileEditorPage />} />
-              <Route path="portfolio" element={<PortfolioPage />} />
-            </Route>
-          </Routes>
+              {/* Internal application (auth required, non-freelancer roles) */}
+              <Route path="/app" element={<AuthGuard allowedRoles={['hiring_user', 'reviewer', 'admin']}><AppLayout /></AuthGuard>}>
+                <Route index element={<TalentDatabasePage />} />
+                <Route path="talent" element={<TalentDatabasePage />} />
+                <Route path="covers" element={<InternalCoverArchivePage />} />
+                <Route path="review" element={<ReviewQueuePage />} />
+                <Route path="folders" element={<FoldersPage />} />
+                <Route path="folders/:folderId" element={<FolderDetailPage />} />
+                <Route path="admin/taxonomy" element={<TaxonomyManagementPage />} />
+                <Route path="admin/covers" element={<CoverManagementPage />} />
+                <Route path="admin/users" element={<UserManagementPage />} />
+                <Route path="admin/settings" element={<SettingsPage />} />
+              </Route>
+
+              {/* Freelancer portal (auth required, freelancer role) */}
+              <Route path="/portal" element={<AuthGuard allowedRoles={['freelancer']}><FreelancerLayout /></AuthGuard>}>
+                <Route index element={<ProfileEditorPage />} />
+                <Route path="profile" element={<ProfileEditorPage />} />
+                <Route path="portfolio" element={<PortfolioPage />} />
+              </Route>
+            </Routes>
+          </AuthProvider>
         </BrowserRouter>
       </ThemeProvider>
     </QueryClientProvider>

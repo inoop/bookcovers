@@ -1,0 +1,36 @@
+{
+  "version": "52.0.0",
+  "files": {
+    "7fa1e366ee8a9ded01fc355f704cff92bfd179574e6f9cfee800a3541df1b200": {
+      "displayName": "CoversNetworkStack/Custom::VpcRestrictDefaultSGCustomResourceProvider Code",
+      "source": {
+        "path": "asset.7fa1e366ee8a9ded01fc355f704cff92bfd179574e6f9cfee800a3541df1b200",
+        "packaging": "zip"
+      },
+      "destinations": {
+        "408264629574-us-east-1-32d3de04": {
+          "bucketName": "cdk-hnb659fds-assets-408264629574-us-east-1",
+          "objectKey": "7fa1e366ee8a9ded01fc355f704cff92bfd179574e6f9cfee800a3541df1b200.zip",
+          "region": "us-east-1",
+          "assumeRoleArn": "arn:${AWS::Partition}:iam::408264629574:role/cdk-hnb659fds-file-publishing-role-408264629574-us-east-1"
+        }
+      }
+    },
+    "055f3ada8e3b54d1bc7d951882c8d015f7684053549958d03b3e7830cb45c669": {
+      "displayName": "CoversNetworkStack Template",
+      "source": {
+        "path": "CoversNetworkStack.template.json",
+        "packaging": "file"
+      },
+      "destinations": {
+        "408264629574-us-east-1-b3108ca3": {
+          "bucketName": "cdk-hnb659fds-assets-408264629574-us-east-1",
+          "objectKey": "055f3ada8e3b54d1bc7d951882c8d015f7684053549958d03b3e7830cb45c669.json",
+          "region": "us-east-1",
+          "assumeRoleArn": "arn:${AWS::Partition}:iam::408264629574:role/cdk-hnb659fds-file-publishing-role-408264629574-us-east-1"
+        }
+      }
+    }
+  },
+  "dockerImages": {}
+}

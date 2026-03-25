@@ -25,7 +25,11 @@ import {
   ManageAccounts as ManageAccountsIcon,
 } from '@mui/icons-material';
 import { Outlet, Link as RouterLink, useLocation } from 'react-router-dom';
+import { Button } from '@mui/material';
+import { Logout as LogoutIcon } from '@mui/icons-material';
 import DevRoleSwitcher from '../components/shared/DevRoleSwitcher';
+import { useAuth } from '../auth/AuthContext';
+import { cognitoConfig } from '../auth/config';
 import { colors, fonts } from '../theme/tokens';
 
 const DRAWER_WIDTH = 280;
@@ -58,6 +62,7 @@ export default function AppLayout() {
     ...(isAdmin ? adminOnlyNavItems : []),
     ...(isAdmin || isReviewer ? reviewerNavItems : []),
   ];
+  const { user, logout } = useAuth();
   const drawerWidth = drawerOpen ? DRAWER_WIDTH : DRAWER_COLLAPSED;
 
   return (
@@ -164,7 +169,18 @@ export default function AppLayout() {
           ))}
           {drawerOpen && (
             <Box sx={{ px: 4, mt: 4 }}>
-              <DevRoleSwitcher />
+              {cognitoConfig.enabled ? (
+                <Button
+                  size="small"
+                  startIcon={<LogoutIcon />}
+                  onClick={logout}
+                  sx={{ color: colors.text.secondary }}
+                >
+                  {user?.email || 'Sign out'}
+                </Button>
+              ) : (
+                <DevRoleSwitcher />
+              )}
             </Box>
           )}
         </Box>

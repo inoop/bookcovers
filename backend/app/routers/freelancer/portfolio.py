@@ -158,6 +158,20 @@ async def list_own_portfolio(
     return responses
 
 
+@router.put("/reorder", status_code=200)
+async def reorder_portfolio(
+    body: PortfolioReorderRequest,
+    user: AuthUser = Depends(require_roles("freelancer")),
+    db: AsyncSession = Depends(get_db),
+):
+    for item in body.items:
+        asset = await _get_own_asset(db, item.id, user)
+        asset.sort_order = item.sort_order
+
+    await db.flush()
+    return {"status": "ok"}
+
+
 @router.put("/{asset_id}", response_model=PortfolioAssetPublicResponse)
 async def update_portfolio_asset(
     asset_id: str,
@@ -188,20 +202,6 @@ async def update_portfolio_asset(
         tags=asset.tags,
         media_url=media_url,
     )
-
-
-@router.put("/reorder", status_code=200)
-async def reorder_portfolio(
-    body: PortfolioReorderRequest,
-    user: AuthUser = Depends(require_roles("freelancer")),
-    db: AsyncSession = Depends(get_db),
-):
-    for item in body.items:
-        asset = await _get_own_asset(db, item.id, user)
-        asset.sort_order = item.sort_order
-
-    await db.flush()
-    return {"status": "ok"}
 
 
 @router.delete("/{asset_id}", status_code=204)

@@ -1,0 +1,194 @@
+{
+  "/CoversNetworkStack/Custom::VpcRestrictDefaultSGCustomResourceProvider": [
+    {
+      "type": "aws:cdk:is-custom-resource-handler-customResourceProvider",
+      "data": true
+    }
+  ],
+  "/CoversNetworkStack/BootstrapVersion": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "BootstrapVersion"
+    }
+  ],
+  "/CoversNetworkStack/CheckBootstrapVersion": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "CheckBootstrapVersion"
+    }
+  ],
+  "/CoversNetworkStack/Vpc/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "Vpc8378EB38"
+    }
+  ],
+  "/CoversNetworkStack/Vpc/IGW": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "VpcIGWD7BA715C"
+    }
+  ],
+  "/CoversNetworkStack/Vpc/VPCGW": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "VpcVPCGWBF912B6E"
+    }
+  ],
+  "/CoversNetworkStack/Custom::VpcRestrictDefaultSGCustomResourceProvider/Role": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "CustomVpcRestrictDefaultSGCustomResourceProviderRole26592FE0"
+    }
+  ],
+  "/CoversNetworkStack/Custom::VpcRestrictDefaultSGCustomResourceProvider/Handler": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "CustomVpcRestrictDefaultSGCustomResourceProviderHandlerDC833E5E"
+    }
+  ],
+  "/CoversNetworkStack/AlbSg/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "AlbSg1155C1BE"
+    }
+  ],
+  "/CoversNetworkStack/FargateSg/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "FargateSg4CA74029"
+    }
+  ],
+  "/CoversNetworkStack/FargateSg/from CoversNetworkStackAlbSgEB44D84F:8000": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "FargateSgfromCoversNetworkStackAlbSgEB44D84F8000B40FA7A9"
+    }
+  ],
+  "/CoversNetworkStack/AuroraSg/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "AuroraSgFE0A4948"
+    }
+  ],
+  "/CoversNetworkStack/AuroraSg/from CoversNetworkStackFargateSgCA0331AF:5432": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "AuroraSgfromCoversNetworkStackFargateSgCA0331AF5432BC1E100F"
+    }
+  ],
+  "/CoversNetworkStack/EcrRepo/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "EcrRepoBB83A592"
+    }
+  ],
+  "/CoversNetworkStack/CDKMetadata/Default": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "CDKMetadata"
+    }
+  ],
+  "/CoversNetworkStack/Exports/Output{\"Ref\":\"VpcPublicSubnet1Subnet5C2D37C4\"}": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "ExportsOutputRefVpcPublicSubnet1Subnet5C2D37C4FFA2B456"
+    }
+  ],
+  "/CoversNetworkStack/Exports/Output{\"Ref\":\"VpcPublicSubnet2Subnet691E08A3\"}": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "ExportsOutputRefVpcPublicSubnet2Subnet691E08A351552740"
+    }
+  ],
+  "/CoversNetworkStack/Exports/Output{\"Fn::GetAtt\":[\"AuroraSgFE0A4948\",\"GroupId\"]}": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "ExportsOutputFnGetAttAuroraSgFE0A4948GroupId3283060E"
+    }
+  ],
+  "/CoversNetworkStack/Exports/Output{\"Fn::GetAtt\":[\"EcrRepoBB83A592\",\"Arn\"]}": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "ExportsOutputFnGetAttEcrRepoBB83A592ArnB6C43A7E"
+    }
+  ],
+  "/CoversNetworkStack/Exports/Output{\"Ref\":\"EcrRepoBB83A592\"}": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "ExportsOutputRefEcrRepoBB83A592FA170EC2"
+    }
+  ],
+  "/CoversNetworkStack/Exports/Output{\"Fn::GetAtt\":[\"FargateSg4CA74029\",\"GroupId\"]}": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "ExportsOutputFnGetAttFargateSg4CA74029GroupId34D43193"
+    }
+  ],
+  "/CoversNetworkStack/Exports/Output{\"Fn::GetAtt\":[\"AlbSg1155C1BE\",\"GroupId\"]}": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "ExportsOutputFnGetAttAlbSg1155C1BEGroupIdF2A72E65"
+    }
+  ],
+  "/CoversNetworkStack/Exports/Output{\"Ref\":\"Vpc8378EB38\"}": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "ExportsOutputRefVpc8378EB38272D6E3A"
+    }
+  ],
+  "/CoversNetworkStack/Vpc/PublicSubnet1/Subnet": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "VpcPublicSubnet1Subnet5C2D37C4"
+    }
+  ],
+  "/CoversNetworkStack/Vpc/PublicSubnet1/RouteTable": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "VpcPublicSubnet1RouteTable6C95E38E"
+    }
+  ],
+  "/CoversNetworkStack/Vpc/PublicSubnet1/RouteTableAssociation": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "VpcPublicSubnet1RouteTableAssociation97140677"
+    }
+  ],
+  "/CoversNetworkStack/Vpc/PublicSubnet1/DefaultRoute": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "VpcPublicSubnet1DefaultRoute3DA9E72A"
+    }
+  ],
+  "/CoversNetworkStack/Vpc/PublicSubnet2/Subnet": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "VpcPublicSubnet2Subnet691E08A3"
+    }
+  ],
+  "/CoversNetworkStack/Vpc/PublicSubnet2/RouteTable": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "VpcPublicSubnet2RouteTable94F7E489"
+    }
+  ],
+  "/CoversNetworkStack/Vpc/PublicSubnet2/RouteTableAssociation": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "VpcPublicSubnet2RouteTableAssociationDD5762D8"
+    }
+  ],
+  "/CoversNetworkStack/Vpc/PublicSubnet2/DefaultRoute": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "VpcPublicSubnet2DefaultRoute97F91067"
+    }
+  ],
+  "/CoversNetworkStack/Vpc/RestrictDefaultSecurityGroupCustomResource/Default": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "VpcRestrictDefaultSecurityGroupCustomResourceC73DA2BE"
+    }
+  ]
+}

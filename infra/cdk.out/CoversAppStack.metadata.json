@@ -1,0 +1,222 @@
+{
+  "/CoversAppStack/Custom::S3AutoDeleteObjectsCustomResourceProvider": [
+    {
+      "type": "aws:cdk:is-custom-resource-handler-customResourceProvider",
+      "data": true
+    }
+  ],
+  "/CoversAppStack/Custom::CDKBucketDeployment8693BB64968944B69AAFB0CC9EB8756C": [
+    {
+      "type": "aws:cdk:is-custom-resource-handler-singleton",
+      "data": true
+    },
+    {
+      "type": "aws:cdk:is-custom-resource-handler-runtime-family",
+      "data": 2
+    }
+  ],
+  "/CoversAppStack/AWSCloudFrontPartitionHostedZoneIdMap": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "AWSCloudFrontPartitionHostedZoneIdMap"
+    }
+  ],
+  "/CoversAppStack/BootstrapVersion": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "BootstrapVersion"
+    }
+  ],
+  "/CoversAppStack/CheckBootstrapVersion": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "CheckBootstrapVersion"
+    }
+  ],
+  "/CoversAppStack/Cluster/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "ClusterEB0386A7"
+    }
+  ],
+  "/CoversAppStack/TaskDef/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "TaskDef54694570"
+    }
+  ],
+  "/CoversAppStack/Service/Service": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "ServiceD69D759B"
+    }
+  ],
+  "/CoversAppStack/ALB/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "ALBAEE750D2"
+    }
+  ],
+  "/CoversAppStack/ApiCert/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "ApiCert744F7693"
+    }
+  ],
+  "/CoversAppStack/ApiARecord/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "ApiARecordFA826994"
+    }
+  ],
+  "/CoversAppStack/SiteBucket/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "SiteBucket397A1860"
+    },
+    {
+      "type": "aws:cdk:analytics:mixin",
+      "data": {
+        "mixin": "aws-cdk-lib.aws_s3.mixins.BucketAutoDeleteObjects"
+      }
+    }
+  ],
+  "/CoversAppStack/Custom::S3AutoDeleteObjectsCustomResourceProvider/Role": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "CustomS3AutoDeleteObjectsCustomResourceProviderRole3B1BD092"
+    }
+  ],
+  "/CoversAppStack/Custom::S3AutoDeleteObjectsCustomResourceProvider/Handler": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "CustomS3AutoDeleteObjectsCustomResourceProviderHandler9D90184F"
+    }
+  ],
+  "/CoversAppStack/SiteCert/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "SiteCert6025247C"
+    }
+  ],
+  "/CoversAppStack/SiteDistribution/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "SiteDistribution3FF9535D"
+    }
+  ],
+  "/CoversAppStack/Custom::CDKBucketDeployment8693BB64968944B69AAFB0CC9EB8756C/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "CustomCDKBucketDeployment8693BB64968944B69AAFB0CC9EB8756C81C01536"
+    }
+  ],
+  "/CoversAppStack/SiteARecord/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "SiteARecord078DA7E7"
+    }
+  ],
+  "/CoversAppStack/CDKMetadata/Default": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "CDKMetadata"
+    }
+  ],
+  "/CoversAppStack/TaskDef/TaskRole/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "TaskDefTaskRole1EDB4A67"
+    }
+  ],
+  "/CoversAppStack/TaskDef/ExecutionRole/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "TaskDefExecutionRoleB4775C97"
+    }
+  ],
+  "/CoversAppStack/ALB/HTTPS/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "ALBHTTPS817D17DF"
+    }
+  ],
+  "/CoversAppStack/ALB/HTTP/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "ALBHTTP3BDC2BD0"
+    }
+  ],
+  "/CoversAppStack/SiteBucket/Policy/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "SiteBucketPolicy3AC1D0F8"
+    },
+    {
+      "type": "aws:cdk:analytics:mixin",
+      "data": {
+        "mixin": "aws-cdk-lib.aws_s3.mixins.BucketPolicyStatements"
+      }
+    }
+  ],
+  "/CoversAppStack/SiteBucket/AutoDeleteObjectsCustomResource/Default": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "SiteBucketAutoDeleteObjectsCustomResource9585E968"
+    }
+  ],
+  "/CoversAppStack/SiteDeployment/AwsCliLayer/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "SiteDeploymentAwsCliLayerADBDEF4E"
+    }
+  ],
+  "/CoversAppStack/SiteDeployment/CustomResource/Default": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "SiteDeploymentCustomResource42D55606"
+    }
+  ],
+  "/CoversAppStack/Custom::CDKBucketDeployment8693BB64968944B69AAFB0CC9EB8756C/ServiceRole/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "CustomCDKBucketDeployment8693BB64968944B69AAFB0CC9EB8756CServiceRole89A01265"
+    }
+  ],
+  "/CoversAppStack/TaskDef/TaskRole/DefaultPolicy/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "TaskDefTaskRoleDefaultPolicyA592CB18"
+    }
+  ],
+  "/CoversAppStack/TaskDef/api/LogGroup/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "TaskDefapiLogGroupB1FF599A"
+    }
+  ],
+  "/CoversAppStack/TaskDef/ExecutionRole/DefaultPolicy/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "TaskDefExecutionRoleDefaultPolicy0DBB737A"
+    }
+  ],
+  "/CoversAppStack/ALB/HTTPS/FargateTargetGroup/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "ALBHTTPSFargateTargetGroup091A0143"
+    }
+  ],
+  "/CoversAppStack/SiteDistribution/Origin1/S3OriginAccessControl/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "SiteDistributionOrigin1S3OriginAccessControl7D960FE6"
+    }
+  ],
+  "/CoversAppStack/Custom::CDKBucketDeployment8693BB64968944B69AAFB0CC9EB8756C/ServiceRole/DefaultPolicy/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "CustomCDKBucketDeployment8693BB64968944B69AAFB0CC9EB8756CServiceRoleDefaultPolicy88902FDF"
+    }
+  ]
+}

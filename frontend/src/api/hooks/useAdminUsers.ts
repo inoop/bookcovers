@@ -29,3 +29,13 @@ export function useUpdateUserRole() {
     onSuccess: () => qc.invalidateQueries({ queryKey: ['admin-users'] }),
   });
 }
+
+export function useDeleteUser() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (userId: string) => {
+      await apiClient.delete(`/api/admin/users/${userId}`);
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['admin-users'] }),
+  });
+}

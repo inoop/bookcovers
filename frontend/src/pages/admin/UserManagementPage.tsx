@@ -1,9 +1,16 @@
 import { useState } from 'react';
 import {
   Box,
+  Button,
   Chip,
   CircularProgress,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  DialogTitle,
   FormControl,
+  IconButton,
   InputLabel,
   MenuItem,
   Select,
@@ -13,23 +20,24 @@ import {
   TableHead,
   TableRow,
   Typography,
-  Button,
 } from '@mui/material';
-import { useAdminUsers, useUpdateUserRole } from '../../api/hooks/useAdminUsers';
+import DeleteIcon from '@mui/icons-material/Delete';
+import { useAdminUsers, useUpdateUserRole, useDeleteUser } from '../../api/hooks/useAdminUsers';
 import type { UserAdminResponse } from '../../api/types';
+import { useAuth } from '../../auth/AuthContext';
 import { colors } from '../../theme/tokens';
 
 const ROLES = ['admin', 'reviewer', 'hiring_user', 'freelancer', 'anonymous'];
 
-const roleColor: Record<string, 'error' | 'warning' | 'info' | 'default' | 'success'> = {
-  admin: 'error',
-  reviewer: 'warning',
-  hiring_user: 'info',
-  freelancer: 'success',
-  anonymous: 'default',
-};
-
-function UserRow({ user }: { user: UserAdminResponse }) {
+function UserRow({
+  user,
+  isSelf,
+  onDelete,
+}: {
+  user: UserAdminResponse;
+  isSelf: boolean;
+  onDelete: (user: { id: string; email: string }) => void;
+}) {
   const [pendingRole, setPendingRole] = useState(user.role);
   const updateRole = useUpdateUserRole();
   const dirty = pendingRole !== user.role;
@@ -74,13 +82,25 @@ function UserRow({ user }: { user: UserAdminResponse }) {
       <TableCell sx={{ color: colors.text.muted, fontSize: '0.8125rem' }}>
         {new Date(user.created_at).toLocaleDateString()}
       </TableCell>
+      <TableCell>
+        <IconButton
+          size="small"
+          disabled={isSelf}
+          onClick={() => onDelete({ id: user.id, email: user.email })}
+        >
+          <DeleteIcon fontSize="small" />
+        </IconButton>
+      </TableCell>
     </TableRow>
   );
 }
 
 export default function UserManagementPage() {
+  const { user: currentUser } = useAuth();
   const [roleFilter, setRoleFilter] = useState('');
   const { data: users = [], isLoading } = useAdminUsers(roleFilter || undefined);
+  const deleteUser = useDeleteUser();
+  const [deleteTarget, setDeleteTarget] = useState<{ id: string; email: string } | null>(null);
 
   return (
     <Box>
@@ -114,15 +134,21 @@ export default function UserManagementPage() {
               <TableCell>Role</TableCell>
               <TableCell>Status</TableCell>
               <TableCell>Joined</TableCell>
+              <TableCell width={60} />
             </TableRow>
           </TableHead>
           <TableBody>
             {users.map((u) => (
-              <UserRow key={u.id} user={u} />
+              <UserRow
+                key={u.id}
+                user={u}
+                isSelf={u.email === currentUser?.email}
+                onDelete={setDeleteTarget}
+              />
             ))}
             {users.length === 0 && (
               <TableRow>
-                <TableCell colSpan={5} align="center" sx={{ py: 6, color: colors.text.muted }}>
+                <TableCell colSpan={6} align="center" sx={{ py: 6, color: colors.text.muted }}>
                   No users found.
                 </TableCell>
               </TableRow>
@@ -130,6 +156,31 @@ export default function UserManagementPage() {
           </TableBody>
         </Table>
       )}
+
+      <Dialog open={!!deleteTarget} onClose={() => setDeleteTarget(null)}>
+        <DialogTitle>Delete User?</DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            This will permanently delete <strong>{deleteTarget?.email}</strong> from the database
+            and the authentication provider. This action cannot be undone.
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setDeleteTarget(null)}>Cancel</Button>
+          <Button
+            color="error"
+            variant="contained"
+            onClick={() => {
+              if (deleteTarget) {
+                deleteUser.mutate(deleteTarget.id);
+                setDeleteTarget(null);
+              }
+            }}
+          >
+            Delete
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 }

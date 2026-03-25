@@ -4,8 +4,11 @@ from dataclasses import dataclass
 from typing import Protocol
 
 from fastapi import Depends, HTTPException, Request
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.config import Settings, get_settings
+from app.database import get_db
 
 
 @dataclass
@@ -101,18 +104,62 @@ def _get_auth_service(settings: Settings = Depends(get_settings)) -> AuthService
     return LocalAuthService(settings)
 
 
+async def _ensure_db_user(
+    auth_user: AuthUser, db: AsyncSession, request_path: str
+) -> AuthUser:
+    """Ensure a users row exists for this Cognito user, creating one if needed.
+
+    Maps the Cognito sub (external_id) to the internal users.id so that
+    foreign keys (freelancer_profiles.user_id, etc.) work correctly.
+    The DB role is authoritative — once created, only an admin can change it.
+    """
+    from app.models.user import User
+
+    result = await db.execute(
+        select(User).where(User.external_id == auth_user.id)
+    )
+    db_user = result.scalar_one_or_none()
+
+    if db_user is None:
+        # Determine initial role from the request path
+        role = "freelancer" if request_path.startswith("/api/freelancer/") else "hiring_user"
+        db_user = User(
+            external_id=auth_user.id,
+            email=auth_user.email,
+            display_name=auth_user.display_name,
+            role=role,
+        )
+        db.add(db_user)
+        await db.flush()
+
+    # Always use the DB role as the authoritative source
+    auth_user.id = db_user.id
+    auth_user.role = db_user.role
+    return auth_user
+
+
 async def get_current_user(
     request: Request,
     auth_service: AuthService = Depends(_get_auth_service),
+    db: AsyncSession = Depends(get_db),
 ) -> AuthUser:
     user = await auth_service.get_current_user(request)
     if user is None:
         raise HTTPException(status_code=401, detail="Not authenticated")
+    settings = get_settings()
+    if settings.AUTH_PROVIDER == "cognito":
+        user = await _ensure_db_user(user, db, request.url.path)
     return user
 
 
 async def get_optional_user(
     request: Request,
     auth_service: AuthService = Depends(_get_auth_service),
+    db: AsyncSession = Depends(get_db),
 ) -> AuthUser | None:
-    return await auth_service.get_current_user(request)
+    user = await auth_service.get_current_user(request)
+    if user is not None:
+        settings = get_settings()
+        if settings.AUTH_PROVIDER == "cognito":
+            user = await _ensure_db_user(user, db, request.url.path)
+    return user

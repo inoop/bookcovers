@@ -115,7 +115,7 @@ function AssetCard({
     <Box
       sx={{
         border: `1px solid ${tokens_colors.border.default}`,
-        borderRadius: tokens_radii.md,
+        borderRadius: tokens_radii.sm,
         overflow: 'hidden',
         width: 200,
         flexShrink: 0,

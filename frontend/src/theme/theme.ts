@@ -206,7 +206,7 @@ const theme = createTheme({
       styleOverrides: {
         root: {
           border: `1px solid #E1E1E1`,
-          borderRadius: radii.md,
+          borderRadius: radii.sm,
         },
       },
     },
@@ -258,10 +258,12 @@ const theme = createTheme({
         root: {
           borderRadius: radii.pill,
           height: 28,
-          backgroundColor: colors.surface.soft,
-          border: `1px solid ${colors.border.default}`,
           fontFamily: fonts.bodyStrong,
           fontSize: '0.75rem',
+        },
+        colorDefault: {
+          backgroundColor: colors.surface.soft,
+          border: `1px solid ${colors.border.default}`,
         },
       },
     },
