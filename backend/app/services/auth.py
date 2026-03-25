@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import logging
 from dataclasses import dataclass
 from typing import Protocol
 
@@ -9,6 +10,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.config import Settings, get_settings
 from app.database import get_db
+
+logger = logging.getLogger(__name__)
 
 
 @dataclass
@@ -148,7 +151,13 @@ async def get_current_user(
         raise HTTPException(status_code=401, detail="Not authenticated")
     settings = get_settings()
     if settings.AUTH_PROVIDER == "cognito":
-        user = await _ensure_db_user(user, db, request.url.path)
+        try:
+            user = await _ensure_db_user(user, db, request.url.path)
+        except Exception:
+            logger.exception(
+                "_ensure_db_user failed for sub=%s path=%s", user.id, request.url.path
+            )
+            raise
     return user
 
 

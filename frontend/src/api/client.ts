@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { emitSessionExpired } from '../auth/authEvents';
 
 const apiClient = axios.create({
   baseURL: import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000',
@@ -33,6 +34,7 @@ apiClient.interceptors.response.use(
   (error) => {
     if (error.response?.status === 401) {
       localStorage.removeItem('auth_token');
+      emitSessionExpired();
     }
     return Promise.reject(error);
   }

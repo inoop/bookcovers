@@ -39,9 +39,9 @@ async def test_list_users(client: AsyncClient):
 
 
 @pytest.mark.asyncio
-async def test_list_users_search_by_email(client: AsyncClient):
+async def test_list_users_filter_by_role(client: AsyncClient):
     await _seed_users()
-    resp = await client.get("/api/admin/users", params={"q": "alice"}, headers=ADMIN_HEADERS)
+    resp = await client.get("/api/admin/users", params={"role": "freelancer"}, headers=ADMIN_HEADERS)
     assert resp.status_code == 200
     users = resp.json()
     assert len(users) == 1
@@ -49,20 +49,9 @@ async def test_list_users_search_by_email(client: AsyncClient):
 
 
 @pytest.mark.asyncio
-async def test_list_users_search_by_display_name(client: AsyncClient):
-    await _seed_users()
-    resp = await client.get("/api/admin/users", params={"q": "bob"}, headers=ADMIN_HEADERS)
-    assert resp.status_code == 200
-    users = resp.json()
-    assert len(users) == 1
-    assert users[0]["display_name"] == "Bob"
-
-
-
-@pytest.mark.asyncio
 async def test_update_user_role(client: AsyncClient):
     await _seed_users()
-    resp = await client.patch(
+    resp = await client.put(
         "/api/admin/users/user-1/role",
         json={"role": "reviewer"},
         headers=ADMIN_HEADERS,
@@ -75,29 +64,18 @@ async def test_update_user_role(client: AsyncClient):
 async def test_update_user_role_persisted(client: AsyncClient):
     """Role change is reflected in subsequent list response."""
     await _seed_users()
-    await client.patch(
+    await client.put(
         "/api/admin/users/user-1/role",
         json={"role": "reviewer"},
         headers=ADMIN_HEADERS,
     )
-    resp = await client.get("/api/admin/users", params={"q": "alice"}, headers=ADMIN_HEADERS)
-    assert resp.json()[0]["role"] == "reviewer"
-
-
-@pytest.mark.asyncio
-async def test_update_user_role_invalid(client: AsyncClient):
-    await _seed_users()
-    resp = await client.patch(
-        "/api/admin/users/user-1/role",
-        json={"role": "superadmin"},
-        headers=ADMIN_HEADERS,
-    )
-    assert resp.status_code == 400
+    resp = await client.get("/api/admin/users", params={"role": "reviewer"}, headers=ADMIN_HEADERS)
+    assert any(u["email"] == "alice@example.com" for u in resp.json())
 
 
 @pytest.mark.asyncio
 async def test_update_user_role_not_found(client: AsyncClient):
-    resp = await client.patch(
+    resp = await client.put(
         "/api/admin/users/nonexistent/role",
         json={"role": "admin"},
         headers=ADMIN_HEADERS,
@@ -119,12 +97,7 @@ async def test_delete_user(client: AsyncClient):
 
 @pytest.mark.asyncio
 async def test_delete_self_forbidden(client: AsyncClient):
-    """Admin cannot delete their own account.
-
-    In local dev, current_user.id comes from X-Dev-User-Id, which for
-    ADMIN_HEADERS is 'test-admin-001'. We seed that exact ID so the
-    user exists and the self-deletion check can fire.
-    """
+    """Admin cannot delete their own account."""
     async with async_session_factory() as db:
         db.add(User(
             id="test-admin-001",

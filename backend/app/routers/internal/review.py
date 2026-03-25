@@ -66,7 +66,7 @@ async def _build_internal_response(
     # Portfolio assets (all, for reviewer)
     assets_stmt = (
         sa.select(PortfolioAsset)
-        .where(PortfolioAsset.user_id == profile.user_id)
+        .where(PortfolioAsset.freelancer_profile_id == profile.id)
         .order_by(PortfolioAsset.sort_order.asc())
     )
     assets = list((await db.execute(assets_stmt)).scalars().all())
@@ -269,7 +269,7 @@ async def get_profile_assets(
     profile = await _get_profile_or_404(db, profile_id)
     stmt = (
         sa.select(PortfolioAsset)
-        .where(PortfolioAsset.user_id == profile.user_id)
+        .where(PortfolioAsset.freelancer_profile_id == profile.id)
         .order_by(PortfolioAsset.sort_order.asc())
     )
     assets = list((await db.execute(stmt)).scalars().all())

@@ -54,7 +54,7 @@ async def list_freelancers(
 
     cards = []
     for p in profiles:
-        hero_url = await _get_hero_image(db, p.user_id, storage)
+        hero_url = await _get_hero_image(db, p.id, storage)
         cards.append(
             FreelancerCardResponse(
                 id=p.id,
@@ -103,7 +103,7 @@ async def get_freelancer_detail(
         raise HTTPException(404, "Freelancer not found")
 
     # Get public portfolio assets
-    assets = await get_public_portfolio_assets(db, profile.user_id)
+    assets = await get_public_portfolio_assets(db, profile.id)
     asset_responses = []
     for a in assets:
         media_url = None
@@ -146,7 +146,7 @@ async def get_freelancer_detail(
 
 
 async def _get_hero_image(
-    db: AsyncSession, user_id: str, storage: StorageService
+    db: AsyncSession, profile_id: str, storage: StorageService
 ) -> str | None:
     """Get the first approved public portfolio asset URL as the hero image."""
     from app.models.media import MediaAsset
@@ -154,7 +154,7 @@ async def _get_hero_image(
     stmt = (
         sa.select(PortfolioAsset)
         .where(
-            PortfolioAsset.user_id == user_id,
+            PortfolioAsset.freelancer_profile_id == profile_id,
             PortfolioAsset.visibility == AssetVisibility.PUBLIC.value,
             PortfolioAsset.review_status == ReviewStatus.APPROVED.value,
         )

@@ -30,10 +30,10 @@ async def list_work_samples(
     db: AsyncSession = Depends(get_db),
     storage: StorageService = Depends(get_storage_service),
 ):
-    # Base query joining PortfolioAsset → FreelancerProfile on shared user_id
+    # Base query joining PortfolioAsset → FreelancerProfile via freelancer_profile_id
     stmt = (
         sa.select(PortfolioAsset, FreelancerProfile)
-        .join(FreelancerProfile, FreelancerProfile.user_id == PortfolioAsset.user_id)
+        .join(FreelancerProfile, FreelancerProfile.id == PortfolioAsset.freelancer_profile_id)
         .where(PortfolioAsset.review_status == ReviewStatus.APPROVED.value)
         .where(PortfolioAsset.visibility == AssetVisibility.PUBLIC.value)
         .where(PortfolioAsset.asset_type == "image")

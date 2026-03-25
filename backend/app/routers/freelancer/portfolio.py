@@ -6,6 +6,7 @@ import sqlalchemy as sa
 
 from app.database import get_db
 from app.middleware.rbac import require_roles
+from app.models.freelancer_profile import FreelancerProfile
 from app.models.media import MediaAsset, StorageBackend
 from app.models.portfolio_asset import (
     PortfolioAsset,
@@ -40,11 +41,21 @@ def _asset_type_from_content(content_type: str) -> str:
     return AssetType.IMAGE.value
 
 
+async def _get_freelancer_profile(db: AsyncSession, user: AuthUser) -> FreelancerProfile:
+    result = await db.execute(
+        sa.select(FreelancerProfile).where(FreelancerProfile.user_id == user.id)
+    )
+    profile = result.scalar_one_or_none()
+    if not profile:
+        raise HTTPException(404, "Freelancer profile not found")
+    return profile
+
+
 async def _get_own_asset(
-    db: AsyncSession, asset_id: str, user: AuthUser
+    db: AsyncSession, asset_id: str, profile: FreelancerProfile
 ) -> PortfolioAsset:
     asset = await db.get(PortfolioAsset, asset_id)
-    if not asset or asset.user_id != user.id:
+    if not asset or asset.freelancer_profile_id != profile.id:
         raise HTTPException(404, "Portfolio asset not found")
     return asset
 
@@ -70,6 +81,8 @@ async def upload_portfolio_asset(
         raise HTTPException(400, f"File too large. Maximum size: {MAX_FILE_SIZE // (1024*1024)}MB")
     await file.seek(0)  # Reset for storage upload
 
+    profile = await _get_freelancer_profile(db, user)
+
     # Upload to storage
     storage_key = generate_storage_key(file.filename or "upload.bin", prefix="portfolio")
     await storage.upload(file, storage_key)
@@ -91,13 +104,13 @@ async def upload_portfolio_asset(
     max_order = (
         await db.execute(
             sa.select(sa.func.coalesce(sa.func.max(PortfolioAsset.sort_order), -1))
-            .where(PortfolioAsset.user_id == user.id)
+            .where(PortfolioAsset.freelancer_profile_id == profile.id)
         )
     ).scalar_one()
 
     # Create portfolio asset
     asset = PortfolioAsset(
-        user_id=user.id,
+        freelancer_profile_id=profile.id,
         media_asset_id=media.id,
         asset_type=_asset_type_from_content(file.content_type or ""),
         visibility=AssetVisibility.PUBLIC.value,
@@ -127,10 +140,11 @@ async def list_own_portfolio(
     db: AsyncSession = Depends(get_db),
     storage: StorageService = Depends(get_storage_service),
 ):
+    profile = await _get_freelancer_profile(db, user)
     stmt = (
         sa.select(PortfolioAsset)
         .where(
-            PortfolioAsset.user_id == user.id,
+            PortfolioAsset.freelancer_profile_id == profile.id,
             PortfolioAsset.visibility != AssetVisibility.HIDDEN.value,
         )
         .order_by(PortfolioAsset.sort_order.asc())
@@ -164,8 +178,9 @@ async def reorder_portfolio(
     user: AuthUser = Depends(require_roles("freelancer")),
     db: AsyncSession = Depends(get_db),
 ):
+    profile = await _get_freelancer_profile(db, user)
     for item in body.items:
-        asset = await _get_own_asset(db, item.id, user)
+        asset = await _get_own_asset(db, item.id, profile)
         asset.sort_order = item.sort_order
 
     await db.flush()
@@ -180,7 +195,8 @@ async def update_portfolio_asset(
     db: AsyncSession = Depends(get_db),
     storage: StorageService = Depends(get_storage_service),
 ):
-    asset = await _get_own_asset(db, asset_id, user)
+    profile = await _get_freelancer_profile(db, user)
+    asset = await _get_own_asset(db, asset_id, profile)
 
     for field, value in body.model_dump(exclude_unset=True).items():
         setattr(asset, field, value)
@@ -210,6 +226,7 @@ async def delete_portfolio_asset(
     user: AuthUser = Depends(require_roles("freelancer")),
     db: AsyncSession = Depends(get_db),
 ):
-    asset = await _get_own_asset(db, asset_id, user)
+    profile = await _get_freelancer_profile(db, user)
+    asset = await _get_own_asset(db, asset_id, profile)
     asset.visibility = AssetVisibility.HIDDEN.value
     await db.flush()

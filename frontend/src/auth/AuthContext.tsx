@@ -2,6 +2,7 @@ import { createContext, useContext, useState, useEffect, useCallback, type React
 import apiClient from '../api/client';
 import { cognitoConfig } from './config';
 import { generateCodeVerifier, generateCodeChallenge } from './pkce';
+import { onSessionExpired } from './authEvents';
 
 interface AuthUser {
   email: string;
@@ -102,6 +103,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setUser(null);
     }
   }, []);
+
+  useEffect(() => {
+    const unsubscribe = onSessionExpired(() => {
+      if (isLoading) return; // initial load handled by mount effect
+      setUser(null);
+      if (cognitoConfig.enabled) {
+        login();
+      }
+    });
+    return unsubscribe;
+  }, [login, isLoading]);
 
   return (
     <AuthContext.Provider value={{ user, isLoading, login, logout }}>
