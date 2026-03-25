@@ -21,7 +21,7 @@ router = APIRouter(prefix="/api/internal/work-samples", tags=["internal-work-sam
 _INTERNAL_ROLES = ("hiring_user", "reviewer", "admin")
 
 
-@router.get("", response_model=PaginatedResponse[WorkSampleCard])
+@router.get("", response_model=PaginatedResponse)
 async def list_work_samples(
     q: str | None = Query(None),
     page: int = Query(1, ge=1),
