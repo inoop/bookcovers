@@ -55,14 +55,15 @@ const reviewerNavItems = [
 export default function AppLayout() {
   const [drawerOpen, setDrawerOpen] = useState(true);
   const location = useLocation();
-  const role = useCurrentRole();
+  const { user, logout } = useAuth();
+  const devRole = useCurrentRole();
+  const role = user?.role ?? devRole;
   const isAdmin = role === 'admin';
   const isReviewer = role === 'reviewer';
   const adminSection = [
     ...(isAdmin ? adminOnlyNavItems : []),
     ...(isAdmin || isReviewer ? reviewerNavItems : []),
   ];
-  const { user, logout } = useAuth();
   const drawerWidth = drawerOpen ? DRAWER_WIDTH : DRAWER_COLLAPSED;
 
   return (
