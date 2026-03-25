@@ -27,5 +27,11 @@ dist-ssr/
 # Logs
 *.log
 
+# CDK
+infra/cdk.out/
+
+# Uploads
+backend/uploads/
+
 # Claude
 .claude/
