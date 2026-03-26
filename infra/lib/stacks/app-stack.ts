@@ -76,6 +76,7 @@ export class AppStack extends cdk.Stack {
     });
 
     portfolioBucket.grantReadWrite(taskDef.taskRole);
+    userPool.grant(taskDef.taskRole, 'cognito-idp:AdminDeleteUser');
 
     const service = new ecs.FargateService(this, 'Service', {
       cluster,

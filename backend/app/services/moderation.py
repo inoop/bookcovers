@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from datetime import datetime, timezone
+from datetime import datetime
 
 from fastapi import HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -69,7 +69,7 @@ async def apply_profile_action(
 
     next_status = PROFILE_TRANSITIONS[key]
     profile.status = next_status.value
-    profile.last_reviewed_at = datetime.now(timezone.utc)
+    profile.last_reviewed_at = datetime.utcnow()
 
     if action == "claim":
         profile.review_owner_id = actor_user_id
