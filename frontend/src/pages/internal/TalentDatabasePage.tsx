@@ -456,7 +456,7 @@ export function ProfileCurationDrawer({
       anchor="right"
       open={open}
       onClose={onClose}
-      PaperProps={{ sx: { width: 720, display: 'flex', flexDirection: 'column', top: '64px' } }}
+      PaperProps={{ sx: { width: 720, display: 'flex', flexDirection: 'column', top: '64px', height: 'calc(100% - 64px)' } }}
     >
       {isLoading || !profile ? (
         <Box sx={{ display: 'flex', justifyContent: 'center', mt: 8 }}>

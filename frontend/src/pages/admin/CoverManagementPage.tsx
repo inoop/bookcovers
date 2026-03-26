@@ -430,7 +430,7 @@ export default function CoverManagementPage() {
         anchor="right"
         open={!!drawerCoverId}
         onClose={() => setDrawerCoverId(null)}
-        PaperProps={{ sx: { width: { xs: '100%', md: 680 }, p: 6, top: '64px' } }}
+        PaperProps={{ sx: { width: { xs: '100%', md: 680 }, p: 6, top: '64px', height: 'calc(100% - 64px)', overflowY: 'auto' } }}
       >
         {drawerCover && (
           <CoverEditDrawer cover={drawerCover} onClose={() => setDrawerCoverId(null)} />

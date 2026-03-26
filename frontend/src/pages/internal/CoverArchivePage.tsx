@@ -115,7 +115,7 @@ function CoverDetailDrawer({
       anchor="right"
       open={!!cover}
       onClose={onClose}
-      PaperProps={{ sx: { width: { xs: '100%', md: 480 }, top: '64px', display: 'flex', flexDirection: 'column' } }}
+      PaperProps={{ sx: { width: { xs: '100%', md: 480 }, top: '64px', height: 'calc(100% - 64px)', display: 'flex', flexDirection: 'column' } }}
     >
       {cover && (
         <>
