@@ -95,7 +95,7 @@ class CognitoAuthService:
                 id=payload["sub"],
                 email=payload.get("email", ""),
                 display_name=payload.get("name", payload.get("email", "")),
-                role=payload.get("custom:role", "hiring_user"),
+                role=payload.get("custom:role", "freelancer"),
             )
         except Exception:
             return None
