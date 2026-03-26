@@ -22,7 +22,7 @@ import {
   Typography,
 } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
-import { useAdminUsers, useUpdateUserRole, useDeleteUser } from '../../api/hooks/useAdminUsers';
+import { useAdminUsers, useDeleteUser, useUpdateUserActive, useUpdateUserRole } from '../../api/hooks/useAdminUsers';
 import type { UserAdminResponse } from '../../api/types';
 import { useAuth } from '../../auth/AuthContext';
 import { colors } from '../../theme/tokens';
@@ -40,6 +40,7 @@ function UserRow({
 }) {
   const [pendingRole, setPendingRole] = useState(user.role);
   const updateRole = useUpdateUserRole();
+  const toggleActive = useUpdateUserActive();
   const dirty = pendingRole !== user.role;
 
   return (
@@ -77,6 +78,9 @@ function UserRow({
           label={user.is_active ? 'Active' : 'Inactive'}
           color={user.is_active ? 'success' : 'default'}
           size="small"
+          onClick={() => toggleActive.mutate({ userId: user.id, isActive: !user.is_active })}
+          disabled={toggleActive.isPending}
+          sx={{ cursor: 'pointer' }}
         />
       </TableCell>
       <TableCell sx={{ color: colors.text.muted, fontSize: '0.8125rem' }}>

@@ -39,3 +39,22 @@ export function useDeleteUser() {
     onSuccess: () => qc.invalidateQueries({ queryKey: ['admin-users'] }),
   });
 }
+
+export function useUpdateUserActive() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ userId, isActive }: { userId: string; isActive: boolean }) => {
+      const { data } = await apiClient.put<UserAdminResponse>(
+        `/api/admin/users/${userId}/active`,
+        { is_active: isActive }
+      );
+      return data;
+    },
+    onSuccess: (updatedUser) => {
+      qc.setQueriesData<UserAdminResponse[]>(
+        { queryKey: ['admin-users'] },
+        (old) => old?.map((u) => (u.id === updatedUser.id ? updatedUser : u)) ?? old,
+      );
+    },
+  });
+}

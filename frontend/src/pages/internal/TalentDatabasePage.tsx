@@ -61,6 +61,7 @@ import {
 import { useTaxonomy } from '../../api/hooks/useTaxonomy';
 import FilterChipGroup from '../../components/shared/FilterChipGroup';
 import { colors as tokens_colors, radii as tokens_radii } from '../../theme/tokens';
+import { resolveMediaUrl } from '../../utils/media';
 import type {
   InternalFreelancerCard,
   InternalFreelancerFilters,
@@ -197,7 +198,7 @@ function InternalCardTile({
         sx={{
           height: 140,
           bgcolor: tokens_colors.surface.soft,
-          backgroundImage: profile.hero_image_url ? `url(${profile.hero_image_url})` : undefined,
+          backgroundImage: resolveMediaUrl(profile.hero_image_url) ? `url(${resolveMediaUrl(profile.hero_image_url)})` : undefined,
           backgroundSize: 'cover',
           backgroundPosition: 'center',
           cursor: 'pointer',
@@ -206,7 +207,7 @@ function InternalCardTile({
           justifyContent: 'center',
         }}
       >
-        {!profile.hero_image_url && (
+        {!resolveMediaUrl(profile.hero_image_url) && (
           <Typography variant="caption" color="text.secondary">
             No image
           </Typography>

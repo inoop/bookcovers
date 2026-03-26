@@ -19,3 +19,7 @@ class UserAdminResponse(BaseModel):
 
 class UserRoleUpdateRequest(BaseModel):
     role: str
+
+
+class UserActiveUpdateRequest(BaseModel):
+    is_active: bool

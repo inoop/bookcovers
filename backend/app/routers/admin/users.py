@@ -8,7 +8,7 @@ from app.config import get_settings
 from app.database import get_db
 from app.middleware.rbac import require_roles
 from app.models.user import User
-from app.schemas.user import UserAdminResponse, UserRoleUpdateRequest
+from app.schemas.user import UserAdminResponse, UserActiveUpdateRequest, UserRoleUpdateRequest
 from app.services.auth import AuthUser
 
 router = APIRouter(prefix="/api/admin/users", tags=["admin-users"])
@@ -77,3 +77,19 @@ async def delete_user(
 
     await db.delete(user)
     await db.flush()
+
+
+@router.put("/{user_id}/active", response_model=UserAdminResponse)
+async def update_user_active(
+    user_id: str,
+    body: UserActiveUpdateRequest,
+    _user: AuthUser = Depends(require_roles("admin")),
+    db: AsyncSession = Depends(get_db),
+):
+    user = await db.get(User, user_id)
+    if not user:
+        raise HTTPException(404, "User not found")
+    user.is_active = body.is_active
+    await db.flush()
+    await db.refresh(user)
+    return user

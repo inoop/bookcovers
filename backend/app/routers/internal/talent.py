@@ -84,12 +84,17 @@ async def _member_count(db: AsyncSession, folder_id: str) -> int:
 
 
 async def _hero_url(
-    db: AsyncSession, profile_id: str, storage: StorageService
+    db: AsyncSession, profile: FreelancerProfile, storage: StorageService
 ) -> str | None:
+    if profile.avatar_asset_id:
+        media = await db.get(MediaAsset, profile.avatar_asset_id)
+        if media:
+            return storage.get_url(media.storage_key)
+
     stmt = (
         sa.select(PortfolioAsset)
         .where(
-            PortfolioAsset.freelancer_profile_id == profile_id,
+            PortfolioAsset.user_id == profile.user_id,
             PortfolioAsset.visibility == AssetVisibility.PUBLIC.value,
             PortfolioAsset.review_status == ReviewStatus.APPROVED.value,
         )
@@ -117,7 +122,7 @@ async def _build_card(
     user_favorites: set of profile IDs favorited by the requesting user.
     user_folder_map: dict mapping profile_id → list of folder_ids.
     """
-    hero_url = await _hero_url(db, profile.id, storage)
+    hero_url = await _hero_url(db, profile, storage)
     return InternalFreelancerCard(
         id=profile.id,
         slug=profile.slug,
