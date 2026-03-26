@@ -149,15 +149,13 @@ async def get_current_user(
     user = await auth_service.get_current_user(request)
     if user is None:
         raise HTTPException(status_code=401, detail="Not authenticated")
-    settings = get_settings()
-    if settings.AUTH_PROVIDER == "cognito":
-        try:
-            user = await _ensure_db_user(user, db, request.url.path)
-        except Exception:
-            logger.exception(
-                "_ensure_db_user failed for sub=%s path=%s", user.id, request.url.path
-            )
-            raise
+    try:
+        user = await _ensure_db_user(user, db, request.url.path)
+    except Exception:
+        logger.exception(
+            "_ensure_db_user failed for sub=%s path=%s", user.id, request.url.path
+        )
+        raise
     return user
 
 
