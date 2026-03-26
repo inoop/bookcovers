@@ -33,5 +33,9 @@ infra/cdk.out/
 # Uploads
 backend/uploads/
 
+# Build artifacts
+backend/build/
+backend/.coverage
+
 # Claude
 .claude/
