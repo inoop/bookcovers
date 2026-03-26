@@ -17,26 +17,8 @@ depends_on: Union[str, Sequence[str], None] = None
 
 
 def upgrade() -> None:
-    op.drop_constraint(
-        "portfolio_assets_freelancer_profile_id_fkey",
-        "portfolio_assets",
-        type_="foreignkey",
-    )
-    op.drop_column("portfolio_assets", "freelancer_profile_id")
-    op.add_column(
-        "portfolio_assets",
-        sa.Column("user_id", sa.String(36), sa.ForeignKey("users.id"), nullable=False),
-    )
+    pass  # no-op: FK refactor was reverted; model keeps freelancer_profile_id
 
 
 def downgrade() -> None:
-    op.drop_column("portfolio_assets", "user_id")
-    op.add_column(
-        "portfolio_assets",
-        sa.Column(
-            "freelancer_profile_id",
-            sa.String(36),
-            sa.ForeignKey("freelancer_profiles.id"),
-            nullable=False,
-        ),
-    )
+    pass

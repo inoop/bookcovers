@@ -158,7 +158,7 @@ async def _get_hero_image(
     stmt = (
         sa.select(PortfolioAsset)
         .where(
-            PortfolioAsset.user_id == profile.user_id,
+            PortfolioAsset.freelancer_profile_id == profile.id,
             PortfolioAsset.visibility == AssetVisibility.PUBLIC.value,
             PortfolioAsset.review_status == ReviewStatus.APPROVED.value,
         )
