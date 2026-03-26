@@ -19,7 +19,6 @@ from app.schemas.freelancer import (
 )
 from app.services.auth import AuthUser
 from app.services.storage import get_storage_service, StorageService, generate_storage_key
-from app.models.media import MediaAsset
 from app.config import get_settings
 
 router = APIRouter(prefix="/api/freelancer/profile", tags=["freelancer-profile"])

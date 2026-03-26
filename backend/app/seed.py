@@ -215,7 +215,7 @@ async def seed():
 
         # Create portfolio assets
         pa1 = PortfolioAsset(
-            user_id=freelancer_user1.id,
+            freelancer_profile_id=profile1.id,
             media_asset_id=media1.id,
             title="The Garden of Forgotten Things",
             description="Cover illustration for literary fiction novel",
@@ -226,7 +226,7 @@ async def seed():
             tags=["watercolor", "botanical", "literary"],
         )
         pa2 = PortfolioAsset(
-            user_id=freelancer_user2.id,
+            freelancer_profile_id=profile2.id,
             media_asset_id=media2.id,
             title="Zero Sum",
             description="Cover design for business thriller",
@@ -237,7 +237,7 @@ async def seed():
             tags=["typography", "minimalist"],
         )
         pa3 = PortfolioAsset(
-            user_id=freelancer_user3.id,
+            freelancer_profile_id=profile3.id,
             media_asset_id=media3.id,
             title="Moonbeam Adventures",
             description="Cover for middle grade fantasy series",
