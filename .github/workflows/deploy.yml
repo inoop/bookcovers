@@ -39,7 +39,7 @@ jobs:
           IMAGE_TAG: ${{ github.sha }}
         run: |
           docker build \
-            -f infrastructure/docker/Dockerfile \
+            -f backend/Dockerfile \
             -t $ECR_REPO:$IMAGE_TAG \
             -t $ECR_REPO:latest \
             ./backend
