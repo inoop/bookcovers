@@ -174,5 +174,15 @@ export class AppStack extends cdk.Stack {
         new route53targets.CloudFrontTarget(siteDistribution),
       ),
     });
+
+    // Outputs used by GitHub Actions frontend deploy
+    new cdk.CfnOutput(this, 'SiteBucketName', {
+      value: siteBucket.bucketName,
+      description: 'Set as SITE_BUCKET_NAME GitHub secret',
+    });
+    new cdk.CfnOutput(this, 'SiteDistributionId', {
+      value: siteDistribution.distributionId,
+      description: 'Set as CLOUDFRONT_DISTRIBUTION_ID GitHub secret',
+    });
   }
 }

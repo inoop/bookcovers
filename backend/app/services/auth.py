@@ -108,12 +108,12 @@ def _get_auth_service(settings: Settings = Depends(get_settings)) -> AuthService
 
 
 async def _ensure_db_user(
-    auth_user: AuthUser, db: AsyncSession, request_path: str
+    auth_user: AuthUser, db: AsyncSession
 ) -> AuthUser:
-    """Ensure a users row exists for this Cognito user, creating one if needed.
+    """Ensure a users row exists for this auth user, creating one if needed.
 
-    Maps the Cognito sub (external_id) to the internal users.id so that
-    foreign keys (freelancer_profiles.user_id, etc.) work correctly.
+    Maps the external auth identity (Cognito sub or local dev ID) to the
+    internal users.id so that foreign keys work correctly.
     The DB role is authoritative — once created, only an admin can change it.
     """
     from app.models.user import User
@@ -124,13 +124,11 @@ async def _ensure_db_user(
     db_user = result.scalar_one_or_none()
 
     if db_user is None:
-        # Determine initial role from the request path
-        role = "freelancer" if request_path.startswith("/api/freelancer/") else "hiring_user"
         db_user = User(
             external_id=auth_user.id,
             email=auth_user.email,
             display_name=auth_user.display_name,
-            role=role,
+            role=auth_user.role,
         )
         db.add(db_user)
         await db.flush()
@@ -150,7 +148,7 @@ async def get_current_user(
     if user is None:
         raise HTTPException(status_code=401, detail="Not authenticated")
     try:
-        user = await _ensure_db_user(user, db, request.url.path)
+        user = await _ensure_db_user(user, db)
     except Exception:
         logger.exception(
             "_ensure_db_user failed for sub=%s path=%s", user.id, request.url.path
@@ -166,7 +164,5 @@ async def get_optional_user(
 ) -> AuthUser | None:
     user = await auth_service.get_current_user(request)
     if user is not None:
-        settings = get_settings()
-        if settings.AUTH_PROVIDER == "cognito":
-            user = await _ensure_db_user(user, db, request.url.path)
+        user = await _ensure_db_user(user, db)
     return user

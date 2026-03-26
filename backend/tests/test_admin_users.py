@@ -10,12 +10,17 @@ from tests.conftest import ADMIN_HEADERS
 
 
 async def _seed_users() -> list[User]:
-    """Insert test users directly into the database."""
+    """Insert test users directly into the database.
+
+    Includes the test admin (external_id matches ADMIN_HEADERS) so that
+    _ensure_db_user finds it instead of creating an extra row.
+    """
     async with async_session_factory() as db:
         users = [
             User(id="user-1", external_id="ext-1", email="alice@example.com", display_name="Alice", role="freelancer"),
             User(id="user-2", external_id="ext-2", email="bob@example.com", display_name="Bob", role="hiring_user"),
             User(id="user-admin", external_id="ext-admin", email="admin@example.com", display_name="Admin", role="admin"),
+            User(id="user-test-admin", external_id="test-admin-001", email="admin@example.com", display_name="Test Admin", role="admin"),
         ]
         db.add_all(users)
         await db.commit()
@@ -24,10 +29,11 @@ async def _seed_users() -> list[User]:
 
 @pytest.mark.asyncio
 async def test_list_users_empty(client: AsyncClient):
-    """Empty DB returns an empty list."""
+    """Only the calling admin exists (created by _ensure_db_user on first request)."""
     resp = await client.get("/api/admin/users", headers=ADMIN_HEADERS)
     assert resp.status_code == 200
-    assert resp.json() == []
+    assert len(resp.json()) == 1
+    assert resp.json()[0]["external_id"] == "test-admin-001"
 
 
 @pytest.mark.asyncio
@@ -35,7 +41,7 @@ async def test_list_users(client: AsyncClient):
     await _seed_users()
     resp = await client.get("/api/admin/users", headers=ADMIN_HEADERS)
     assert resp.status_code == 200
-    assert len(resp.json()) == 3
+    assert len(resp.json()) == 4
 
 
 @pytest.mark.asyncio
@@ -98,17 +104,11 @@ async def test_delete_user(client: AsyncClient):
 @pytest.mark.asyncio
 async def test_delete_self_forbidden(client: AsyncClient):
     """Admin cannot delete their own account."""
-    async with async_session_factory() as db:
-        db.add(User(
-            id="test-admin-001",
-            external_id="ext-test-admin-001",
-            email="testadmin@example.com",
-            display_name="Test Admin",
-            role="admin",
-        ))
-        await db.commit()
+    # Resolve the calling admin's internal ID first
+    me = (await client.get("/api/me", headers=ADMIN_HEADERS)).json()
+    admin_id = me["id"]
 
-    resp = await client.delete("/api/admin/users/test-admin-001", headers=ADMIN_HEADERS)
+    resp = await client.delete(f"/api/admin/users/{admin_id}", headers=ADMIN_HEADERS)
     assert resp.status_code == 400
     assert "Cannot delete your own account" in resp.json()["detail"]
 

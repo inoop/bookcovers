@@ -32,11 +32,13 @@ async def test_claim_profile(client: AsyncClient):
     profile = await create_submitted_profile(client)
     assert profile["status"] == "submitted"
 
+    reviewer_id = (await client.get("/api/me", headers=REVIEWER_HEADERS)).json()["id"]
+
     resp = await _do_action(client, profile["id"], "claim")
     assert resp.status_code == 200
     data = resp.json()
     assert data["status"] == "under_review"
-    assert data["review_owner_id"] == "test-reviewer-001"
+    assert data["review_owner_id"] == reviewer_id
 
 
 @pytest.mark.asyncio
@@ -244,9 +246,10 @@ async def test_create_reviewer_note(client: AsyncClient):
     )
     assert resp.status_code == 201
     data = resp.json()
+    reviewer_id = (await client.get("/api/me", headers=REVIEWER_HEADERS)).json()["id"]
     assert data["body"] == "Initial thoughts on this portfolio"
     assert data["note_type"] == "general"
-    assert data["author_user_id"] == "test-reviewer-001"
+    assert data["author_user_id"] == reviewer_id
 
 
 @pytest.mark.asyncio
