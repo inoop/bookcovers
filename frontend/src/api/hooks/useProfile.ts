@@ -77,7 +77,7 @@ export function useUploadAvatar() {
     mutationFn: async (file: File) => {
       const formData = new FormData();
       formData.append('file', file);
-      const { data } = await apiClient.post<OwnProfileResponse>(
+      const { data } = await apiClient.post<{ id: string; url: string }>(
         '/api/freelancer/profile/avatar',
         formData,
         { headers: { 'Content-Type': 'multipart/form-data' } }

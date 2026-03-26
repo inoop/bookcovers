@@ -296,7 +296,7 @@ ALLOWED_AVATAR_TYPES = {"image/jpeg", "image/png", "image/webp"}
 MAX_AVATAR_SIZE = 5 * 1024 * 1024  # 5MB
 
 
-@router.post("/avatar", response_model=FreelancerOwnProfileResponse)
+@router.post("/avatar")
 async def upload_avatar(
     file: UploadFile = File(...),
     user: AuthUser = Depends(require_roles("freelancer")),
@@ -314,10 +314,6 @@ async def upload_avatar(
         raise HTTPException(400, "Avatar file exceeds 5MB limit")
     await file.seek(0)
 
-    profile = await _get_own_profile(db, user)
-    if not profile:
-        raise HTTPException(404, "No profile found. Create one first.")
-
     storage_key = generate_storage_key(file.filename or "avatar.jpg", prefix="avatars")
     await storage.upload(file, storage_key)
 
@@ -333,10 +329,12 @@ async def upload_avatar(
     db.add(media)
     await db.flush()
 
-    profile.avatar_asset_id = media.id
-    await db.flush()
-    await db.refresh(profile)
-    return await _build_response(db, profile, storage)
+    profile = await _get_own_profile(db, user)
+    if profile:
+        profile.avatar_asset_id = media.id
+        await db.flush()
+
+    return {"id": media.id, "url": storage.get_url(storage_key)}
 
 
 @router.delete("/avatar", response_model=FreelancerOwnProfileResponse)

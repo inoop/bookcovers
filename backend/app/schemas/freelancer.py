@@ -105,6 +105,7 @@ class FreelancerProfileUpdateRequest(BaseModel):
     profile_statement: str | None = None
     is_self_submission: bool | None = None
     relation_type: str | None = None
+    avatar_asset_id: str | None = None
 
 
 class FreelancerOwnProfileResponse(BaseModel):

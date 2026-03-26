@@ -52,6 +52,7 @@ export default function ProfileEditorPage() {
 
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
   const [avatarError, setAvatarError] = useState<string | null>(null);
+  const [pendingAvatarAssetId, setPendingAvatarAssetId] = useState<string | null>(null);
   const avatarInputRef = useRef<HTMLInputElement>(null);
 
   const [aboutOpen, setAboutOpen] = useState(true);
@@ -83,8 +84,9 @@ export default function ProfileEditorPage() {
     try {
       const thumbnail = await createThumbnail(file);
       setAvatarPreview(thumbnail);
-      await uploadAvatar.mutateAsync(file);
-      setAvatarPreview(null);
+      const result = await uploadAvatar.mutateAsync(file);
+      setPendingAvatarAssetId(result.id);
+      setAvatarPreview(result.url);
     } catch {
       setAvatarPreview(null);
       setAvatarError('Upload failed. Please try again.');
@@ -159,8 +161,9 @@ export default function ProfileEditorPage() {
           name: data.name || 'New Profile',
           email: data.email || '',
         });
-        // After creation, update with full data
-        await updateProfile.mutateAsync(data);
+        // After creation, update with full data including any pending avatar
+        await updateProfile.mutateAsync({ ...data, avatar_asset_id: pendingAvatarAssetId ?? undefined });
+        setPendingAvatarAssetId(null);
       } else {
         await updateProfile.mutateAsync(data);
       }
@@ -182,7 +185,8 @@ export default function ProfileEditorPage() {
           name: formData.name || 'New Profile',
           email: formData.email || '',
         });
-        await updateProfile.mutateAsync(formData);
+        await updateProfile.mutateAsync({ ...formData, avatar_asset_id: pendingAvatarAssetId ?? undefined });
+        setPendingAvatarAssetId(null);
       } else {
         await updateProfile.mutateAsync(formData);
       }

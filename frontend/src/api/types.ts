@@ -158,6 +158,7 @@ export interface ProfileUpdateRequest {
   profile_statement?: string;
   is_self_submission?: boolean;
   relation_type?: string;
+  avatar_asset_id?: string;
 }
 
 export interface OwnProfileResponse {
