@@ -47,7 +47,26 @@ async def _get_freelancer_profile(db: AsyncSession, user: AuthUser) -> Freelance
     )
     profile = result.scalar_one_or_none()
     if not profile:
-        raise HTTPException(404, "Freelancer profile not found")
+        from app.models.freelancer_profile import ProfileStatus
+        import re
+        base = re.sub(r"[\s_]+", "-", re.sub(r"[^\w\s-]", "", (user.display_name or user.email).lower().strip()))
+        slug = base
+        counter = 1
+        while True:
+            taken = (await db.execute(sa.select(FreelancerProfile.id).where(FreelancerProfile.slug == slug))).scalar_one_or_none()
+            if taken is None:
+                break
+            slug = f"{base}-{counter}"
+            counter += 1
+        profile = FreelancerProfile(
+            user_id=user.id,
+            name=user.display_name or user.email,
+            email=user.email,
+            slug=slug,
+            status=ProfileStatus.DRAFT.value,
+        )
+        db.add(profile)
+        await db.flush()
     return profile
 
 
