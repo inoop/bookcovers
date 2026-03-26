@@ -201,6 +201,9 @@ jobs:
         working-directory: frontend
         env:
           VITE_API_BASE_URL: https://api.covers.nbrouwers.com
+          VITE_COGNITO_DOMAIN: covers-nbrouwers.auth.us-east-1.amazoncognito.com
+          VITE_COGNITO_CLIENT_ID: g0hoeghhvdmekbaeugueno00g
+          VITE_COGNITO_REDIRECT_URI: https://covers.nbrouwers.com/auth/callback
         run: npm run build
 
       - name: Configure AWS credentials (OIDC)
