@@ -166,7 +166,7 @@ function FolderCard({
     <Box
       sx={{
         border: `1px solid ${tokens_colors.border.default}`,
-        borderRadius: tokens_radii.sm,
+        borderRadius: `${tokens_radii.sm}px`,
         p: 2.5,
         bgcolor: 'background.paper',
         '&:hover': { boxShadow: '0 4px 16px rgba(0,0,0,0.08)' },

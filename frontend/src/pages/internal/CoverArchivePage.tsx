@@ -2,21 +2,26 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Box,
+  Button,
   Card,
   CardContent,
   Chip,
   CircularProgress,
+  Drawer,
   FormControl,
   InputAdornment,
   InputLabel,
   MenuItem,
   Pagination,
   Select,
+  Stack,
   Tab,
   Tabs,
   TextField,
   Typography,
 } from '@mui/material';
+import CloseIcon from '@mui/icons-material/Close';
+import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 import SearchIcon from '@mui/icons-material/Search';
 import PersonIcon from '@mui/icons-material/Person';
 import { useCovers } from '../../api/hooks/useCovers';
@@ -24,7 +29,7 @@ import { useWorkSamples } from '../../api/hooks/useWorkSamples';
 import { useTaxonomy } from '../../api/hooks/useTaxonomy';
 import FilterChipGroup from '../../components/shared/FilterChipGroup';
 import CoverCard from '../../components/shared/CoverCard';
-import type { CoverFilters, WorkSampleCard } from '../../api/types';
+import type { BookCoverCardResponse, CoverFilters, WorkSampleCard } from '../../api/types';
 import { colors, fonts } from '../../theme/tokens';
 
 // ---------------------------------------------------------------------------
@@ -98,8 +103,90 @@ function WorkSampleGridCard({ sample }: { sample: WorkSampleCard }) {
 // Cover Archive tab
 // ---------------------------------------------------------------------------
 
+function CoverDetailDrawer({
+  cover,
+  onClose,
+}: {
+  cover: BookCoverCardResponse | null;
+  onClose: () => void;
+}) {
+  return (
+    <Drawer
+      anchor="right"
+      open={!!cover}
+      onClose={onClose}
+      PaperProps={{ sx: { width: { xs: '100%', md: 480 }, top: '64px', display: 'flex', flexDirection: 'column' } }}
+    >
+      {cover && (
+        <>
+          <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ px: 3, py: 2, borderBottom: `1px solid ${colors.border.default}` }}>
+            <Typography variant="h3" noWrap sx={{ maxWidth: 340 }}>{cover.title}</Typography>
+            <Button size="small" variant="text" onClick={onClose} startIcon={<CloseIcon />}>Close</Button>
+          </Stack>
+
+          <Box sx={{ flex: 1, overflow: 'auto', px: 3, py: 3 }}>
+            <Box
+              sx={{
+                width: '100%',
+                aspectRatio: '2/3',
+                backgroundColor: colors.surface.raised,
+                backgroundImage: cover.primary_image_url ? `url(${cover.primary_image_url})` : 'none',
+                backgroundSize: 'cover',
+                backgroundPosition: 'center',
+                borderRadius: '4px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                mb: 3,
+              }}
+            >
+              {!cover.primary_image_url && (
+                <Typography variant="body2" sx={{ color: colors.text.muted }}>No cover image</Typography>
+              )}
+            </Box>
+
+            <Typography variant="body2" sx={{ color: colors.text.secondary, mb: 0.5 }}>{cover.author_name}</Typography>
+
+            {cover.contributors.length > 0 && (
+              <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5, mb: 2 }}>
+                {cover.contributors.map((c) => (
+                  <Chip key={c.id} label={`${c.contributor_name} · ${c.contributor_type}`} size="small" variant="outlined" />
+                ))}
+              </Box>
+            )}
+
+            {cover.genre_tags && cover.genre_tags.length > 0 && (
+              <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5, mb: 1 }}>
+                {cover.genre_tags.map((t) => <Chip key={t} label={t} size="small" />)}
+              </Box>
+            )}
+            {cover.audience_tags && cover.audience_tags.length > 0 && (
+              <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5, mb: 2 }}>
+                {cover.audience_tags.map((t) => <Chip key={t} label={t} size="small" variant="outlined" />)}
+              </Box>
+            )}
+
+            <Button
+              size="small"
+              variant="outlined"
+              startIcon={<OpenInNewIcon />}
+              href={`/covers/${cover.slug || cover.id}`}
+              target="_blank"
+              rel="noopener"
+              sx={{ mt: 1 }}
+            >
+              Open public page
+            </Button>
+          </Box>
+        </>
+      )}
+    </Drawer>
+  );
+}
+
 function CoverArchiveTab() {
   const [filters, setFilters] = useState<CoverFilters>({ sort: 'newest', page: 1 });
+  const [selectedCover, setSelectedCover] = useState<BookCoverCardResponse | null>(null);
   const { data, isLoading } = useCovers(filters);
   const { data: genreTerms } = useTaxonomy('genre');
   const { data: audienceTerms } = useTaxonomy('audience');
@@ -192,7 +279,7 @@ function CoverArchiveTab() {
               }}
             >
               {data.items.map((cover) => (
-                <CoverCard key={cover.id} cover={cover} />
+                <CoverCard key={cover.id} cover={cover} onClick={() => setSelectedCover(cover)} />
               ))}
             </Box>
             {data.total_pages > 1 && (
@@ -217,6 +304,7 @@ function CoverArchiveTab() {
           </Box>
         )}
       </Box>
+      <CoverDetailDrawer cover={selectedCover} onClose={() => setSelectedCover(null)} />
     </Box>
   );
 }

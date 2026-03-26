@@ -58,6 +58,21 @@ export function useAddContributor() {
   });
 }
 
+export function useUploadCoverImage() {
+  return useMutation({
+    mutationFn: async (file: File) => {
+      const fd = new FormData();
+      fd.append('file', file);
+      const { data } = await apiClient.post<{ id: string; url: string }>(
+        '/api/admin/covers/upload-image',
+        fd,
+        { headers: { 'Content-Type': 'multipart/form-data' } }
+      );
+      return data;
+    },
+  });
+}
+
 export function useRemoveContributor() {
   const qc = useQueryClient();
   return useMutation({

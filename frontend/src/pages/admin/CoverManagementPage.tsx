@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import {
   Box,
   Button,
@@ -28,6 +28,7 @@ import {
   Add as AddIcon,
   Close as CloseIcon,
   Delete as DeleteIcon,
+  Upload as UploadIcon,
 } from '@mui/icons-material';
 import {
   useAdminCovers,
@@ -35,6 +36,7 @@ import {
   useUpdateCover,
   useAddContributor,
   useRemoveContributor,
+  useUploadCoverImage,
 } from '../../api/hooks/useAdminCovers';
 import type {
   CoverAdminResponse,
@@ -102,10 +104,35 @@ const visibilityColor: Record<string, 'success' | 'warning' | 'default'> = {
 function CoverFormFields({
   form,
   onChange,
+  imagePreviewUrl,
 }: {
   form: CoverForm;
   onChange: (f: CoverForm) => void;
+  imagePreviewUrl?: string;
 }) {
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const uploadImage = useUploadCoverImage();
+  const [uploadError, setUploadError] = useState<string | null>(null);
+  const [localPreview, setLocalPreview] = useState<string | null>(null);
+
+  const displayUrl = localPreview ?? imagePreviewUrl ?? null;
+
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploadError(null);
+    setLocalPreview(URL.createObjectURL(file));
+    try {
+      const result = await uploadImage.mutateAsync(file);
+      onChange({ ...form, primary_image_asset_id: result.id });
+      setLocalPreview(result.url);
+    } catch {
+      setLocalPreview(null);
+      setUploadError('Upload failed. Please try again.');
+    }
+    e.target.value = '';
+  };
+
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
       <TextField label="Title" value={form.title} onChange={(e) => onChange({ ...form, title: e.target.value })} required fullWidth />
@@ -114,7 +141,43 @@ function CoverFormFields({
       <TextField label="Publisher" value={form.publisher} onChange={(e) => onChange({ ...form, publisher: e.target.value })} fullWidth />
       <TextField label="Imprint" value={form.imprint} onChange={(e) => onChange({ ...form, imprint: e.target.value })} fullWidth />
       <TextField label="Publication Date" type="date" value={form.publication_date} onChange={(e) => onChange({ ...form, publication_date: e.target.value })} fullWidth InputLabelProps={{ shrink: true }} />
-      <TextField label="Primary Image Asset ID" value={form.primary_image_asset_id} onChange={(e) => onChange({ ...form, primary_image_asset_id: e.target.value })} required fullWidth helperText="UUID of a MediaAsset already uploaded" />
+
+      {/* Cover image upload */}
+      <Box>
+        <Typography variant="body2" sx={{ mb: 1, color: colors.text.secondary }}>Cover Image *</Typography>
+        {displayUrl && (
+          <Box
+            component="img"
+            src={displayUrl}
+            sx={{ width: 120, height: 160, objectFit: 'cover', borderRadius: '4px', display: 'block', mb: 1, border: `1px solid ${colors.border.default}` }}
+          />
+        )}
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept="image/jpeg,image/png,image/webp"
+          style={{ display: 'none' }}
+          onChange={handleFileChange}
+        />
+        <Button
+          size="small"
+          variant="outlined"
+          startIcon={uploadImage.isPending ? undefined : <UploadIcon />}
+          onClick={() => fileInputRef.current?.click()}
+          disabled={uploadImage.isPending}
+        >
+          {uploadImage.isPending ? 'Uploading…' : displayUrl ? 'Replace image' : 'Upload image'}
+        </Button>
+        {uploadError && (
+          <Typography variant="caption" sx={{ color: 'error.main', display: 'block', mt: 0.5 }}>{uploadError}</Typography>
+        )}
+        {form.primary_image_asset_id && (
+          <Typography variant="caption" sx={{ color: colors.text.muted, display: 'block', mt: 0.5 }}>
+            Asset ID: {form.primary_image_asset_id}
+          </Typography>
+        )}
+      </Box>
+
       <TextField label="Audience Tags (comma-separated)" value={form.audience_tags} onChange={(e) => onChange({ ...form, audience_tags: e.target.value })} fullWidth />
       <TextField label="Genre Tags (comma-separated)" value={form.genre_tags} onChange={(e) => onChange({ ...form, genre_tags: e.target.value })} fullWidth />
       <TextField label="Visual Tags (comma-separated)" value={form.visual_tags} onChange={(e) => onChange({ ...form, visual_tags: e.target.value })} fullWidth />
@@ -251,7 +314,7 @@ function CoverEditDrawer({
       </Tabs>
       {tab === 0 && (
         <>
-          <CoverFormFields form={form} onChange={setForm} />
+          <CoverFormFields form={form} onChange={setForm} imagePreviewUrl={cover.primary_image_url ?? undefined} />
           <Button
             variant="contained"
             sx={{ mt: 4 }}
@@ -367,7 +430,7 @@ export default function CoverManagementPage() {
         anchor="right"
         open={!!drawerCoverId}
         onClose={() => setDrawerCoverId(null)}
-        PaperProps={{ sx: { width: { xs: '100%', md: 680 }, p: 6 } }}
+        PaperProps={{ sx: { width: { xs: '100%', md: 680 }, p: 6, top: '64px' } }}
       >
         {drawerCover && (
           <CoverEditDrawer cover={drawerCover} onClose={() => setDrawerCoverId(null)} />
@@ -386,6 +449,7 @@ export default function CoverManagementPage() {
             variant="contained"
             onClick={handleCreate}
             disabled={!createForm.title || !createForm.author_name || !createForm.primary_image_asset_id || createMutation.isPending}
+            title={!createForm.primary_image_asset_id ? 'Upload a cover image first' : undefined}
           >
             Create
           </Button>

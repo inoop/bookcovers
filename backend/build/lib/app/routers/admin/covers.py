@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from fastapi import APIRouter, Depends, HTTPException, Query, UploadFile, File
+from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 import sqlalchemy as sa
@@ -8,7 +8,6 @@ import sqlalchemy as sa
 from app.database import get_db
 from app.middleware.rbac import require_roles
 from app.models.book_cover import BookCover, BookCoverContributor
-from app.models.media import MediaAsset
 from app.schemas.book_cover import (
     CoverAdminResponse,
     CoverCreateRequest,
@@ -17,8 +16,6 @@ from app.schemas.book_cover import (
     ContributorResponse,
 )
 from app.services.auth import AuthUser
-from app.services.storage import get_storage_service, StorageService, generate_storage_key
-from app.config import get_settings
 
 router = APIRouter(prefix="/api/admin/covers", tags=["admin-covers"])
 
@@ -58,46 +55,6 @@ def _cover_to_response(cover: BookCover, base_url: str = "") -> CoverAdminRespon
         created_at=cover.created_at,
         updated_at=cover.updated_at,
     )
-
-
-ALLOWED_IMAGE_TYPES = {"image/jpeg", "image/png", "image/webp"}
-MAX_IMAGE_SIZE = 10 * 1024 * 1024  # 10 MB
-
-
-@router.post("/upload-image")
-async def upload_cover_image(
-    file: UploadFile = File(...),
-    user: AuthUser = Depends(require_roles("admin")),
-    db: AsyncSession = Depends(get_db),
-    storage: StorageService = Depends(get_storage_service),
-):
-    if file.content_type not in ALLOWED_IMAGE_TYPES:
-        raise HTTPException(
-            400,
-            f"File type '{file.content_type}' not allowed. Accepted: JPEG, PNG, WebP",
-        )
-    content = await file.read()
-    if len(content) > MAX_IMAGE_SIZE:
-        raise HTTPException(400, "Image file exceeds 10 MB limit")
-    await file.seek(0)
-
-    settings = get_settings()
-    storage_key = generate_storage_key(file.filename or "cover.jpg", prefix="covers")
-    await storage.upload(file, storage_key)
-
-    media = MediaAsset(
-        uploaded_by_user_id=user.id,
-        filename=file.filename or "cover.jpg",
-        content_type=file.content_type or "image/jpeg",
-        size_bytes=len(content),
-        storage_backend=settings.STORAGE_BACKEND,
-        storage_key=storage_key,
-    )
-    db.add(media)
-    await db.flush()
-    await db.refresh(media)
-
-    return {"id": media.id, "url": storage.get_url(storage_key)}
 
 
 @router.get("", response_model=list[CoverAdminResponse])

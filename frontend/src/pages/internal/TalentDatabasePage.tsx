@@ -185,7 +185,7 @@ function InternalCardTile({
     <Box
       sx={{
         border: `1px solid ${tokens_colors.border.default}`,
-        borderRadius: tokens_radii.sm,
+        borderRadius: `${tokens_radii.sm}px`,
         overflow: 'hidden',
         bgcolor: 'background.paper',
         '&:hover': { boxShadow: '0 4px 16px rgba(0,0,0,0.10)' },
@@ -456,7 +456,7 @@ export function ProfileCurationDrawer({
       anchor="right"
       open={open}
       onClose={onClose}
-      PaperProps={{ sx: { width: 720, display: 'flex', flexDirection: 'column' } }}
+      PaperProps={{ sx: { width: 720, display: 'flex', flexDirection: 'column', top: '64px' } }}
     >
       {isLoading || !profile ? (
         <Box sx={{ display: 'flex', justifyContent: 'center', mt: 8 }}>
@@ -582,7 +582,7 @@ export function ProfileCurationDrawer({
                     sx={{
                       width: 160,
                       border: `1px solid ${tokens_colors.border.default}`,
-                      borderRadius: tokens_radii.sm,
+                      borderRadius: `${tokens_radii.sm}px`,
                       overflow: 'hidden',
                     }}
                   >
@@ -680,7 +680,7 @@ export function ProfileCurationDrawer({
                       sx={{
                         p: 1.5,
                         border: `1px solid ${tokens_colors.border.default}`,
-                        borderRadius: tokens_radii.sm,
+                        borderRadius: `${tokens_radii.sm}px`,
                       }}
                     >
                       <Typography variant="caption" color="text.secondary">

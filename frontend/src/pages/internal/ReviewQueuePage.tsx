@@ -269,7 +269,7 @@ function ProfileDrawer({
       anchor="right"
       open={open}
       onClose={onClose}
-      PaperProps={{ sx: { width: 720, display: 'flex', flexDirection: 'column' } }}
+      PaperProps={{ sx: { width: 720, display: 'flex', flexDirection: 'column', top: '64px' } }}
     >
       {isLoading || !profile ? (
         <Box sx={{ display: 'flex', justifyContent: 'center', mt: 8 }}>

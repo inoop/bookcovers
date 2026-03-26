@@ -5,24 +5,12 @@ import { colors, fonts } from '../../theme/tokens';
 
 interface CoverCardProps {
   cover: BookCoverCardResponse;
+  onClick?: () => void;
 }
 
-export default function CoverCard({ cover }: CoverCardProps) {
-  const link = `/covers/${cover.slug || cover.id}`;
-
+function CoverCardBody({ cover }: { cover: BookCoverCardResponse }) {
   return (
-    <Card
-      component={RouterLink}
-      to={link}
-      sx={{
-        textDecoration: 'none',
-        display: 'flex',
-        flexDirection: 'column',
-        height: '100%',
-        transition: 'border-color 180ms cubic-bezier(0.2, 0, 0, 1)',
-        '&:hover': { borderColor: colors.border.strong },
-      }}
-    >
+    <>
       <Box
         sx={{
           height: 280,
@@ -64,6 +52,36 @@ export default function CoverCard({ cover }: CoverCardProps) {
           </Typography>
         )}
       </CardContent>
+    </>
+  );
+}
+
+export default function CoverCard({ cover, onClick }: CoverCardProps) {
+  const link = `/covers/${cover.slug || cover.id}`;
+
+  const baseSx = {
+    display: 'flex',
+    flexDirection: 'column',
+    height: '100%',
+    transition: 'border-color 180ms cubic-bezier(0.2, 0, 0, 1)',
+    '&:hover': { borderColor: colors.border.strong },
+  };
+
+  if (onClick) {
+    return (
+      <Card sx={{ ...baseSx, cursor: 'pointer' }} onClick={onClick}>
+        <CoverCardBody cover={cover} />
+      </Card>
+    );
+  }
+
+  return (
+    <Card
+      component={RouterLink}
+      to={link}
+      sx={{ ...baseSx, textDecoration: 'none' }}
+    >
+      <CoverCardBody cover={cover} />
     </Card>
   );
 }
