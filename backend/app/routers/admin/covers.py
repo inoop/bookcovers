@@ -23,12 +23,12 @@ from app.config import get_settings
 router = APIRouter(prefix="/api/admin/covers", tags=["admin-covers"])
 
 
-def _cover_to_response(cover: BookCover, base_url: str = "") -> CoverAdminResponse:
+def _cover_to_response(cover: BookCover, storage: StorageService) -> CoverAdminResponse:
     image_url = None
     if cover.primary_image:
         storage_key = cover.primary_image.storage_key
         if storage_key:
-            image_url = f"{base_url}/uploads/{storage_key}"
+            image_url = storage.get_url(storage_key)
 
     return CoverAdminResponse(
         id=cover.id,
@@ -107,6 +107,7 @@ async def list_admin_covers(
     page_size: int = Query(50, ge=1, le=200),
     _user: AuthUser = Depends(require_roles("admin")),
     db: AsyncSession = Depends(get_db),
+    storage: StorageService = Depends(get_storage_service),
 ):
     stmt = (
         sa.select(BookCover)
@@ -121,7 +122,7 @@ async def list_admin_covers(
     stmt = stmt.offset((page - 1) * page_size).limit(page_size)
     result = await db.execute(stmt)
     covers = list(result.scalars().all())
-    return [_cover_to_response(c) for c in covers]
+    return [_cover_to_response(c, storage) for c in covers]
 
 
 @router.post("", response_model=CoverAdminResponse, status_code=201)
@@ -129,12 +130,13 @@ async def create_cover(
     body: CoverCreateRequest,
     _user: AuthUser = Depends(require_roles("admin")),
     db: AsyncSession = Depends(get_db),
+    storage: StorageService = Depends(get_storage_service),
 ):
     cover = BookCover(**body.model_dump())
     db.add(cover)
     await db.flush()
     cover = await _load_cover(db, cover.id)
-    return _cover_to_response(cover)
+    return _cover_to_response(cover, storage)
 
 
 async def _load_cover(db: AsyncSession, cover_id: str) -> BookCover:
@@ -153,6 +155,7 @@ async def update_cover(
     body: CoverUpdateRequest,
     _user: AuthUser = Depends(require_roles("admin")),
     db: AsyncSession = Depends(get_db),
+    storage: StorageService = Depends(get_storage_service),
 ):
     cover = await db.get(BookCover, cover_id)
     if not cover:
@@ -161,7 +164,7 @@ async def update_cover(
         setattr(cover, field, value)
     await db.flush()
     cover = await _load_cover(db, cover_id)
-    return _cover_to_response(cover)
+    return _cover_to_response(cover, storage)
 
 
 @router.post("/{cover_id}/contributors", response_model=ContributorResponse, status_code=201)
