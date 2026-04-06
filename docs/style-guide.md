@@ -16,7 +16,7 @@ This guide should be treated as the canonical UX style source of truth.
 
 ## Source of Truth and Brand Direction
 
-This guide is based on the visual language used on the Penguin Random House global homepage and PRH theme CSS, then translated into a more structured product system.
+This guide is based on the visual language used on the Penguin Random House US homepage and PRH theme CSS, then translated into a more structured product system.
 
 The PRH reference patterns visible in the homepage and stylesheet are consistent in these ways:
 
